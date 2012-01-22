@@ -1,11 +1,9 @@
-#include <stdlib.h>
-#include "char.c"
-
 struct str{
 	int length;
 	char *value;
 };
 typedef struct str str;
+str *new_str_p(char *value);
 
 int str_find_from(str *string, str *key, int start){
 	return char_find_from(string->value, string->length,
@@ -17,8 +15,10 @@ int str_find(str *string, str *key){
 		key->value, key->length);
 }
 
-void set_bin_without_free(str *string, char *value, int length){
+void set_bin(str *string, char *value, int length){
 	int i;
+	free(string->value);
+	string->value = NULL;
 	string->length = length;
 	string->value = (char*) malloc(sizeof(char)*(length+1));
 	for (i=0; i<length; i++){
@@ -27,19 +27,9 @@ void set_bin_without_free(str *string, char *value, int length){
 	string->value[length] = '\x00';
 }
 
-void set_str_without_free(str *string, char *value){
-	int length = char_len(value);
-	set_bin_without_free(string, value, length);
-}
-
 void set_str(str *string, char *value){
-	free(string->value); //bug if string not from new_str ?
-	set_str_without_free(string, value);
-}
-
-void set_bin(str *string, char *value, int length){
-	free(string->value);
-	set_bin_without_free(string, value, length);
+	int length = char_len(value);
+	set_bin(string, value, length);
 }
 
 int str_replace_from(str *string, str *before, str *after, int from){
@@ -50,14 +40,37 @@ int str_replace_from(str *string, str *before, str *after, int from){
 		after->value, after->length, from);
 	if (result.count > 0){
 		free(string->value);
+		string->value = NULL;
 		string->value = result.new_value;
 		string->length = result.new_length;
 	}
 	return result.count;
 }
 
+int str_replace_char_from(str *string,
+	char *before_value, char *after_value, int from){
+	str *before = new_str_p(before_value);
+	str *after = new_str_p(after_value);
+	int result_replace;
+	result_replace = str_replace_from(string, before, after, from);
+	free(before->value);
+	free(after->value);
+	free(before);
+	free(after);
+	before->value = NULL;
+	before->value = NULL;
+	before = NULL;
+	after = NULL;
+	return result_replace;
+}
+
 int str_replace_once(str *string, str *before, str *after){
 	return str_replace_from(string, before, after, 0);
+}
+
+int str_replace_char_once(str *string,
+	char *before_value, char *after_value){
+	return str_replace_char_from(string, before_value, after_value, 0);
 }
 
 int str_replace(str *string, str *before, str *after){
@@ -73,6 +86,7 @@ int str_replace(str *string, str *before, str *after){
 		if (result.count > 0){
 			//printf("free %p\n", string->value);
 			free(string->value);
+			string->value = NULL;
 			string->value = result.new_value;
 			//printf("new %p from %p\n", string->value, result.new_value);
 			string->length = result.new_length;
@@ -86,35 +100,106 @@ int str_replace(str *string, str *before, str *after){
 	return count;
 }
 
+int str_replace_char(str *string,
+	char *before_value, char *after_value){
+	str *before = new_str_p(before_value);
+	str *after = new_str_p(after_value);
+	int result_replace;
+	result_replace = str_replace(string, before, after);
+	/*printf("str_replace_char before: %s\n", before->value);
+	printf("str_replace_char after: %s\n", after->value);
+	printf("str_replace_char string: %s\n", string->value);*/
+	free(before->value);
+	free(after->value);
+	free(before);
+	free(after);
+	before->value = NULL;
+	before->value = NULL;
+	before = NULL;
+	after = NULL;
+	return result_replace;
+}
+
 int str_mid(str *string, int start, int end){
 	if (end > string->length){
 		end = string->length;
 	}
 	if (start < 0){
-		fprintf(stderr, "[error] str_mid: start < 0 [%d]\n", start);
+		fprintf(stderr, "[error] str_mid: start [%d] < 0\n", start);
 		return 0;
 	}
-	if (end < 0){
-		fprintf(stderr, "[error] str_mid: end < 0 [%d]\n", end);
+	else if (end < 0){
+		fprintf(stderr, "[error] str_mid: end [%d] < 0\n", end);
 		return 0;
 	}
-	if (end < start){
-		fprintf(stderr, "[error] str_mid: end < start [%d, %d]\n", start, end);
+	else if (end < start){
+		fprintf(stderr, "[error] str_mid: end [%d] < start [%d]\n", start, end);
 		return 0;
 	}
 	int new_length = end-start;
 	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
-	char_clear(new_value, new_length+1, '\x00');
+	//char_clear(new_value, new_length+1, '\x00');
 	char_copy_range(string->value, start, new_value, 0, new_length);
+	string->value[new_length] = '\x00';
 	free(string->value);
 	string->length = new_length;
 	string->value = new_value;
 	return 1;
 }
 
+int str_equal(str *string_x, str *string_y){
+	//return bool
+	int i;
+	if (string_x->length != string_y->length){
+		return 0;
+	}
+	for (i=0; i<string_x->length; i++){
+		if (string_x->value[i] != string_y->value[i]){
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int str_equal_char(str *string_x, char *value){
+	int i;
+	int length = char_len(value);
+	if (string_x->length != length){
+		return 0;
+	}
+	for (i=0; i<string_x->length; i++){
+		if (string_x->value[i] != value[i]){
+			return 0;
+		}
+	}
+	return 1;
+}
+
 str new_str(char *value){
 	str string;
-	set_str_without_free(&string, value);
+	string.value = NULL;
+	set_str(&string, value);
+	return string;
+}
+
+str *new_str_p(char *value){
+	str *string = (str*) malloc(sizeof(str));
+	string->value = NULL;
+	set_str(string, value);
+	return string;
+}
+
+str new_str_from_bin(char *value, int length){
+	str string;
+	string.value = NULL;
+	set_bin(&string, value, length);
+	return string;
+}
+
+str *new_str_p_from_bin(char *value, int length){
+	str *string = (str*) malloc(sizeof(str));
+	string->value = NULL;
+	set_bin(string, value, length);
 	return string;
 }
 
@@ -130,15 +215,36 @@ str new_str_from_replace_from(str *src, str *before, str *after, int from){
 	return string;
 }
 
+str new_str_from_replace_char_from(str *src,
+	char *before_value, char *after_value, int from){
+	str string = new_str_from_copy(src);
+	str_replace_char_from(&string, before_value, after_value, from);
+	return string;
+}
+
 str new_str_from_replace_once(str *src, str *before, str *after){
 	str string = new_str_from_copy(src);
 	str_replace_once(&string, before, after);
 	return string;
 }
 
+str new_str_from_replace_char_once(str *src,
+	char *before_value, char *after_value){
+	str string = new_str_from_copy(src);
+	str_replace_char_once(&string, before_value, after_value);
+	return string;
+}
+
 str new_str_from_replace(str *src, str *before, str *after){
 	str string = new_str_from_copy(src);
 	str_replace(&string, before, after);
+	return string;
+}
+
+str new_str_from_replace_char(str *src,
+	char *before_value, char *after_value){
+	str string = new_str_from_copy(src);
+	str_replace_char(&string, before_value, after_value);
 	return string;
 }
 

@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include "int.c"
-
 struct char_replace_result{
 	int index;
 	int count;
@@ -59,12 +56,12 @@ int char_find(char* value, int value_length, char* key, int key_length){
 	return char_find_from(value, value_length, key, key_length, 0);
 }
 
-void char_clear(char *value, int value_length, char num){
-	int i;
-	for (i=0; i<value_length; i++){
-		value[i] = num;
-	}
-}
+//void char_clear(char *value, int value_length, char num){
+//	int i;
+//	for (i=0; i<value_length; i++){
+//		value[i] = num;
+//	}
+//}
 
 void char_copy_range(char *src, int src_from, char *dst, int dst_from, int length){
 	//fprintf(stderr, "char_copy_range: %d %s\n", length, src);
@@ -99,7 +96,7 @@ char_replace_result char_replace_from(char* value, int value_length,
 	result.count = 1;
 	result.new_length = value_length+after_length-before_length;
 	result.new_value = (char*) malloc(sizeof(char)*(result.new_length+1));
-	char_clear(result.new_value, result.new_length+1, '\x00');
+	//char_clear(result.new_value, result.new_length+1, '\x00');
 	/*fprintf(stderr, "value: %s\n", value);
 	fprintf(stderr, "from: %d\n", from);
 	fprintf(stderr, "value_length: %d\n", value_length);
@@ -115,6 +112,7 @@ char_replace_result char_replace_from(char* value, int value_length,
 	char_copy_range(value, before_index+before_length,
 		result.new_value, before_index+after_length,
 		value_length-before_index-before_length); //"de"
+	result.new_value[result.new_length] = '\x00';
 	//fprintf(stderr, "result.new_value: %s\n", result.new_value);
 	//fprintf(stderr, "replace end\n\n");
 	return result;
