@@ -1,0 +1,15 @@
+A c library for handling string.
+
+sample:
+
+str string = new_str("test index");
+str key = new_str("index");
+int index = str_find(&string, &key);
+
+str replace_before = new_str("abc");
+str replace_after = new_str("abcde");
+str string_before = new_str("test replace abcabcabc");
+str string_after = new_str_from_replace(&string_before, &replace_before, &replace_after);
+
+str string = new_str("0123456789");
+str string_new = new_str_from_mid(&string, 5, 10);
