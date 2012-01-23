@@ -24,7 +24,11 @@ int str_find(str *string, str *key){
 		key->value, key->length);
 }
 
-void set_bin(str *string, char *value, int length){
+void str_set_bin(str *string, char *value, int length){
+	if (value == NULL){
+		fprintf(stderr, "str_set_bin error: value == NULL\n");
+		return;
+	}
 	int i;
 	str_reset(string);
 	string->length = length;
@@ -35,9 +39,9 @@ void set_bin(str *string, char *value, int length){
 	string->value[length] = '\x00';
 }
 
-void set_str(str *string, char *value){
+void str_set(str *string, char *value){
 	int length = char_len(value);
-	set_bin(string, value, length);
+	str_set_bin(string, value, length);
 }
 
 int str_replace_from(str *string, str *before, str *after, int from){
@@ -181,7 +185,9 @@ str new_str(char *value){
 	str string;
 	string.length = 0;
 	string.value = NULL;
-	set_str(&string, value);
+	if (value != NULL){
+		str_set(&string, value);
+	}
 	return string;
 }
 
@@ -189,35 +195,45 @@ str *new_str_p(char *value){
 	str *string = (str*) malloc(sizeof(str));
 	string->length = 0;
 	string->value = NULL;
-	set_str(string, value);
+	if (value != NULL){
+		str_set(string, value);
+	}
 	return string;
 }
 
 str new_str_from_bin(char *value, int length){
-	str string;
-	string.length = 0;
-	string.value = NULL;
-	set_bin(&string, value, length);
+	str string = new_str(NULL);
+	str_set_bin(&string, value, length);
 	return string;
 }
 
 str *new_str_p_from_bin(char *value, int length){
-	str *string = (str*) malloc(sizeof(str));
-	string->length = 0;
-	string->value = NULL;
-	set_bin(string, value, length);
+	str *string = new_str_p(NULL);
+	str_set_bin(string, value, length);
 	return string;
 }
 
 str new_str_from_copy(str *src){
-	str string = new_str("");
-	set_bin(&string, src->value, src->length);
+	str string = new_str(NULL);
+	str_set_bin(&string, src->value, src->length);
+	return string;
+}
+
+str *new_str_p_from_copy(str *src){
+	str *string = new_str_p(NULL);
+	str_set_bin(string, src->value, src->length);
 	return string;
 }
 
 str new_str_from_replace_from(str *src, str *before, str *after, int from){
 	str string = new_str_from_copy(src);
 	str_replace_from(&string, before, after, from);
+	return string;
+}
+
+str *new_str_p_from_replace_from(str *src, str *before, str *after, int from){
+	str *string = new_str_p_from_copy(src);
+	str_replace_from(string, before, after, from);
 	return string;
 }
 
@@ -228,9 +244,22 @@ str new_str_from_replace_char_from(str *src,
 	return string;
 }
 
+str *new_str_p_from_replace_char_from(str *src,
+	char *before_value, char *after_value, int from){
+	str *string = new_str_p_from_copy(src);
+	str_replace_char_from(string, before_value, after_value, from);
+	return string;
+}
+
 str new_str_from_replace_once(str *src, str *before, str *after){
 	str string = new_str_from_copy(src);
 	str_replace_once(&string, before, after);
+	return string;
+}
+
+str *new_str_p_from_replace_once(str *src, str *before, str *after){
+	str *string = new_str_p_from_copy(src);
+	str_replace_once(string, before, after);
 	return string;
 }
 
@@ -241,9 +270,22 @@ str new_str_from_replace_char_once(str *src,
 	return string;
 }
 
+str *new_str_p_from_replace_char_once(str *src,
+	char *before_value, char *after_value){
+	str *string = new_str_p_from_copy(src);
+	str_replace_char_once(string, before_value, after_value);
+	return string;
+}
+
 str new_str_from_replace(str *src, str *before, str *after){
 	str string = new_str_from_copy(src);
 	str_replace(&string, before, after);
+	return string;
+}
+
+str *new_str_p_from_replace(str *src, str *before, str *after){
+	str *string = new_str_p_from_copy(src);
+	str_replace(string, before, after);
 	return string;
 }
 
@@ -254,8 +296,21 @@ str new_str_from_replace_char(str *src,
 	return string;
 }
 
+str *new_str_p_from_replace_char(str *src,
+	char *before_value, char *after_value){
+	str *string = new_str_p_from_copy(src);
+	str_replace_char(string, before_value, after_value);
+	return string;
+}
+
 str new_str_from_mid(str *src, int start, int end){
 	str string = new_str_from_copy(src);
 	str_mid(&string, start, end);
+	return string;
+}
+
+str *new_str_p_from_mid(str *src, int start, int end){
+	str *string = new_str_p_from_copy(src);
+	str_mid(string, start, end);
 	return string;
 }

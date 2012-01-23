@@ -4,9 +4,9 @@
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
-	str string = new_str("");
+	str string = new_str(NULL);
 	str end = new_str("end");
-	set_str(&string, "hello world");
+	str_set(&string, "hello world");
 	printf("value: %s length: %d\n", string.value, string.length);
 	printf("%s\n", end.value);
 	printf("\n");
@@ -16,7 +16,7 @@ void test_copy(){
 	printf("---- test_copy -----\n");
 	str src = new_str("before copy");
 	str dst = new_str_from_copy(&src);
-	set_str(&dst, "after copy");
+	str_set(&dst, "after copy");
 	printf("src: \"%s\" dst: \"%s\"\n", src.value, dst.value);
 	printf("\n");
 }

@@ -44,8 +44,7 @@ void list_data_set_str(list_data *data, str *string){
 	free(data->string);
 	data->string = NULL;
 	data->num = -1;
-	data->string = (str*) malloc(sizeof(str));
-	*data->string = new_str_from_copy(string);
+	data->string = new_str_p_from_copy(string);
 	data->type = DATA_TYPE_STR;
 }
 
@@ -54,8 +53,7 @@ void list_data_set_char(list_data *data, char *value){
 	free(data->string);
 	data->string = NULL;
 	data->num = -1;
-	data->string = (str*) malloc(sizeof(str));
-	*data->string = new_str(value);
+	data->string = new_str_p(value);
 	data->type = DATA_TYPE_STR;
 }
 
@@ -320,7 +318,7 @@ str list_get_str(list *l, int index){
 		fprintf(stderr, "[error] list_get_str: data type not str\n");
 		return result;
 	}
-	set_bin(&result, data->string->value, data->string->length);
+	str_set_bin(&result, data->string->value, data->string->length);
 	return result;
 }
 
