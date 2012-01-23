@@ -5,6 +5,15 @@ struct str{
 typedef struct str str;
 str *new_str_p(char *value);
 
+void str_reset(str *string){
+	if (string == NULL){
+		return;
+	}
+	free(string->value);
+	string->length = 0;
+	string->value = NULL;
+}
+
 int str_find_from(str *string, str *key, int start){
 	return char_find_from(string->value, string->length,
 		key->value, key->length, start);
@@ -17,8 +26,7 @@ int str_find(str *string, str *key){
 
 void set_bin(str *string, char *value, int length){
 	int i;
-	free(string->value);
-	string->value = NULL;
+	str_reset(string);
 	string->length = length;
 	string->value = (char*) malloc(sizeof(char)*(length+1));
 	for (i=0; i<length; i++){
@@ -39,10 +47,9 @@ int str_replace_from(str *string, str *before, str *after, int from){
 		before->value, before->length,
 		after->value, after->length, from);
 	if (result.count > 0){
-		free(string->value);
-		string->value = NULL;
-		string->value = result.new_value;
+		str_reset(string);
 		string->length = result.new_length;
+		string->value = result.new_value;
 	}
 	return result.count;
 }
@@ -53,12 +60,10 @@ int str_replace_char_from(str *string,
 	str *after = new_str_p(after_value);
 	int result_replace;
 	result_replace = str_replace_from(string, before, after, from);
-	free(before->value);
-	free(after->value);
+	str_reset(before);
+	str_reset(after);
 	free(before);
 	free(after);
-	before->value = NULL;
-	before->value = NULL;
 	before = NULL;
 	after = NULL;
 	return result_replace;
@@ -85,11 +90,10 @@ int str_replace(str *string, str *before, str *after){
 			after->value, after->length, from);
 		if (result.count > 0){
 			//printf("free %p\n", string->value);
-			free(string->value);
-			string->value = NULL;
+			str_reset(string);
+			string->length = result.new_length;
 			string->value = result.new_value;
 			//printf("new %p from %p\n", string->value, result.new_value);
-			string->length = result.new_length;
 			from = result.index+after->length;
 			count += result.count;
 		}
@@ -109,12 +113,10 @@ int str_replace_char(str *string,
 	/*printf("str_replace_char before: %s\n", before->value);
 	printf("str_replace_char after: %s\n", after->value);
 	printf("str_replace_char string: %s\n", string->value);*/
-	free(before->value);
-	free(after->value);
+	str_reset(before);
+	str_reset(after);
 	free(before);
 	free(after);
-	before->value = NULL;
-	before->value = NULL;
 	before = NULL;
 	after = NULL;
 	return result_replace;
@@ -140,8 +142,8 @@ int str_mid(str *string, int start, int end){
 	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
 	//char_clear(new_value, new_length+1, '\x00');
 	char_copy_range(string->value, start, new_value, 0, new_length);
-	string->value[new_length] = '\x00';
-	free(string->value);
+	new_value[new_length] = '\x00';
+	str_reset(string);
 	string->length = new_length;
 	string->value = new_value;
 	return 1;
@@ -177,6 +179,7 @@ int str_equal_char(str *string_x, char *value){
 
 str new_str(char *value){
 	str string;
+	string.length = 0;
 	string.value = NULL;
 	set_str(&string, value);
 	return string;
@@ -184,6 +187,7 @@ str new_str(char *value){
 
 str *new_str_p(char *value){
 	str *string = (str*) malloc(sizeof(str));
+	string->length = 0;
 	string->value = NULL;
 	set_str(string, value);
 	return string;
@@ -191,6 +195,7 @@ str *new_str_p(char *value){
 
 str new_str_from_bin(char *value, int length){
 	str string;
+	string.length = 0;
 	string.value = NULL;
 	set_bin(&string, value, length);
 	return string;
@@ -198,6 +203,7 @@ str new_str_from_bin(char *value, int length){
 
 str *new_str_p_from_bin(char *value, int length){
 	str *string = (str*) malloc(sizeof(str));
+	string->length = 0;
 	string->value = NULL;
 	set_bin(string, value, length);
 	return string;

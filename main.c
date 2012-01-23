@@ -99,12 +99,13 @@ void test_str_list(){
 	list_insert_str(&l, &temp, 3);
 	list_insert_char(&l, "100", 3);
 	list_remove_char(&l, "temp");
+	list_insert_int(&l, 100, 3);
 	print_list(&l);
 	int num_get = 0;
 	str result_get = list_get_str(&l, num_get);
-	int result_find = list_find_char(&l, "end");
+	int result_find = list_find_char(&l, "100");
 	printf("list get %d: %s\n", num_get, result_get.value);
-	printf("list find %s: %d\n", "end", result_find);
+	printf("list find %s: %d\n", "100", result_find);
 	printf("\n");
 }
 

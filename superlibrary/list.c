@@ -23,6 +23,64 @@ struct list{
 };
 typedef struct list list;
 
+list_data *new_list_data_p(){
+	list_data *data = (list_data*) malloc(sizeof(list_data));
+	data->num = -1;
+	data->string = NULL;
+	data->type = DATA_TYPE_NULL;
+	return data;
+}
+
+void list_data_set_int(list_data *data, int num){
+	str_reset(data->string);
+	free(data->string);
+	data->string = NULL;
+	data->num = num;
+	data->type = DATA_TYPE_INT;
+}
+
+void list_data_set_str(list_data *data, str *string){
+	str_reset(data->string);
+	free(data->string);
+	data->string = NULL;
+	data->num = -1;
+	data->string = (str*) malloc(sizeof(str));
+	*data->string = new_str_from_copy(string);
+	data->type = DATA_TYPE_STR;
+}
+
+void list_data_set_char(list_data *data, char *value){
+	str_reset(data->string);
+	free(data->string);
+	data->string = NULL;
+	data->num = -1;
+	data->string = (str*) malloc(sizeof(str));
+	*data->string = new_str(value);
+	data->type = DATA_TYPE_STR;
+}
+
+void list_data_reset(list_data *data){
+	if (data == NULL){
+		return;
+	}
+	str_reset(data->string);
+	free(data->string);
+	data->string = NULL;
+	data->num = -1;
+	data->type = DATA_TYPE_NULL;
+}
+
+void list_child_reset(list_child *m){
+	if (m == NULL){
+		return;
+	}
+	list_data_reset(m->data);
+	free(m->data);
+	m->data = NULL;
+	m->prev = NULL;
+	m->next = NULL;
+}
+
 void list_insert(list *l, list_data *data, int index){
 	list_child *m;
 	list_child *fault;
@@ -59,7 +117,7 @@ void list_insert(list *l, list_data *data, int index){
 		for (i=0; i<index; i++){
 			fault = fault->next;
 		}
-		printf("insert before %d\n", fault->data->num);
+		//printf("insert before %d\n", fault->data->num);
 		m->prev = fault->prev;
 		m->next = fault;
 		fault->prev->next = m;
@@ -69,25 +127,20 @@ void list_insert(list *l, list_data *data, int index){
 }
 
 void list_insert_int(list *l, int num, int index){
-	list_data *data = (list_data*) malloc(sizeof(list_data));
-	data->num = num;
-	data->type = DATA_TYPE_INT;
+	list_data *data = new_list_data_p();
+	list_data_set_int(data, num);
 	list_insert(l, data, index);
 }
 
 void list_insert_str(list *l, str *string, int index){
-	list_data *data = (list_data*) malloc(sizeof(list_data));
-	data->string = (str*) malloc(sizeof(str));
-	*data->string = new_str_from_copy(string);
-	data->type = DATA_TYPE_STR;
+	list_data *data = new_list_data_p();
+	list_data_set_str(data, string);
 	list_insert(l, data, index);
 }
 
 void list_insert_char(list *l, char *value, int index){
-	list_data *data = (list_data*) malloc(sizeof(list_data));
-	data->string = (str*) malloc(sizeof(str));
-	*data->string = new_str(value);
-	data->type = DATA_TYPE_STR;
+	list_data *data = new_list_data_p();
+	list_data_set_char(data, value);
 	list_insert(l, data, index);
 }
 
@@ -185,15 +238,8 @@ int list_remove(list *l, int index){
 		m->prev->next = m->next;
 		m->next->prev = m->prev;
 	}
-	if (m->data->type == DATA_TYPE_STR){
-		free(m->data->string->value);
-		free(m->data->string);
-		m->data->string->value = NULL;
-		m->data->string = NULL;
-	}
-	free(m->data);
+	list_child_reset(m);
 	free(m);
-	m->data = NULL;
 	m = NULL;
 	l->length -= 1;
 	return 1;
