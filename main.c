@@ -111,11 +111,13 @@ void test_str_list(){
 
 void test_split(){
 	printf("---- test_split -----\n");
-	str row = new_str("123,. ,. ,. 1234,. 12345");
-	list l = new_list_from_split_str_skip_space(&row, ",.");
+	str row = new_str_from_bin("_123___ ___ ___ 1234___ \x00_1", 27);
+	list l = new_list_from_split_str_skip_space(&row, "___");
 	print_list(&l);
 	list_remove_all_char(&l, "");
 	print_list(&l);
+	list ls = new_list_from_split_bin_space("id name 	cost\x00.date", 20);
+	print_list(&ls);
 	printf("\n");
 }
 

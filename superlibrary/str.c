@@ -181,6 +181,13 @@ int str_equal_char(str *string_x, char *value){
 	return 1;
 }
 
+void print_str(str *string){
+	int i;
+	for (i=0; i<string->length; i++){
+		printf("%c", string->value[i]);
+	}
+}
+
 str new_str(char *value){
 	str string;
 	string.length = 0;

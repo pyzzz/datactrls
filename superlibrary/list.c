@@ -48,6 +48,15 @@ void list_data_set_str(list_data *data, str *string){
 	data->type = DATA_TYPE_STR;
 }
 
+void list_data_set_bin(list_data *data, char *value, int value_length){
+	str_reset(data->string);
+	free(data->string);
+	data->string = NULL;
+	data->num = -1;
+	data->string = new_str_p_from_bin(value, value_length);
+	data->type = DATA_TYPE_STR;
+}
+
 void list_data_set_char(list_data *data, char *value){
 	str_reset(data->string);
 	free(data->string);
@@ -142,6 +151,12 @@ void list_insert_char(list *l, char *value, int index){
 	list_insert(l, data, index);
 }
 
+void list_insert_bin(list *l, char *value, int value_length, int index){
+	list_data *data = new_list_data_p();
+	list_data_set_bin(data, value, value_length);
+	list_insert(l, data, index);
+}
+
 void list_append(list *l, list_data *data){
 	list_insert(l, data, l->length);
 }
@@ -156,6 +171,10 @@ void list_append_str(list *l, str *string){
 
 void list_append_char(list *l, char *value){
 	list_insert_char(l, value, l->length);
+}
+
+void list_append_bin(list *l, char *value, int value_length){
+	list_insert_bin(l, value, value_length, l->length);
 }
 
 int list_find_int(list *l, int num){
@@ -447,7 +466,11 @@ void print_list(list *l){
 			printf("%d, ", m->data->num);
 		}
 		else if (m->data->type == DATA_TYPE_STR){
-			printf("\"%s\", ", m->data->string->value);
+			printf("\"");
+			print_str(m->data->string);
+			printf("\"");
+			printf("[%d], ", m->data->string->length);
+			//printf(", ");
 		}
 		else{
 			printf("NULL, ");
@@ -477,6 +500,7 @@ list new_list_from_range(int start, int end){
 list new_list_from_split_bin(char *value, int value_length,
 	char *split_key, char skip_space){
 	list l = new_list();
+	int split_key_length = char_len(split_key);
 	char *word = malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
@@ -487,23 +511,25 @@ list new_list_from_split_bin(char *value, int value_length,
 		if ((skip_space != 0) && (j == ' ' || j == '\t')){
 			continue;
 		}
-		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
-		//	j, split_key[split_key_i], split_key_i);
-		if(j != split_key[split_key_i]){
-			word[word_i] = j;
-			word_i += 1;
-		}
-		else{
+		word[word_i] = j;
+		//word[word_i+1] = '\x00';
+		word_i += 1;
+		if (j == split_key[split_key_i]){
 			split_key_i += 1;
 		}
+		else{
+			split_key_i = 0;
+		}
 		if (split_key[split_key_i] == '\x00'){
-			word[word_i] = '\x00';
+			list_append_bin(&l, word, word_i-split_key_length);
 			word_i = 0;
 			split_key_i = 0;
-			list_append_char(&l, word);
+			word[0] = '\x00';
 		}
+		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
+		//	j, split_key[split_key_i], split_key_i);
 	}
-	list_append_char(&l, word);
+	list_append_bin(&l, word, word_i);
 	free(word);
 	word = NULL;
 	return l;
@@ -525,4 +551,43 @@ list new_list_from_split_char(char *value, char *split_key){
 list new_list_from_split_char_skip_space(char *value, char *split_key){
 	int value_length = char_len(value);
 	return new_list_from_split_bin(value, value_length, split_key, 1);
+}
+
+list new_list_from_split_bin_space(char *value, int value_length){
+	list l = new_list();
+	char *word = malloc(sizeof(char)*(value_length+1));
+	int i;
+	int word_i = 0;
+	char j;
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		if (j == ' ' || j == '\t' || j == '\x00'){
+			word[word_i] = '\x00';
+			if (word[0] != '\x00'){
+				list_append_bin(&l, word, word_i);
+				word[0] = '\x00';
+			}
+			word_i = 0;
+		}
+		else{
+			word[word_i] = j;
+			word_i += 1;
+		}
+		//printf("j %d\n", j);
+	}
+	if (word[0] != '\x00'){
+		list_append_bin(&l, word, word_i);
+	}
+	free(word);
+	word = NULL;
+	return l;
+}
+
+list new_list_from_split_str_space(str *string){
+	return new_list_from_split_bin_space(string->value, string->length);
+}
+
+list new_list_from_split_char_space(char *value){
+	int value_length = char_len(value);
+	return new_list_from_split_bin_space(value, value_length);
 }
