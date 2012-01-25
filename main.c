@@ -111,8 +111,8 @@ void test_str_list(){
 
 void test_split(){
 	printf("---- test_split -----\n");
-	str row = new_str("123, , , 1234, 12345");
-	list l = new_list_from_split_str_skip_space(&row, ',');
+	str row = new_str("123,. ,. ,. 1234,. 12345");
+	list l = new_list_from_split_str_skip_space(&row, ",.");
 	print_list(&l);
 	list_remove_all_char(&l, "");
 	print_list(&l);

@@ -475,24 +475,31 @@ list new_list_from_range(int start, int end){
 }
 
 list new_list_from_split_bin(char *value, int value_length,
-	char split_key, char skip_space){
+	char *split_key, char skip_space){
 	list l = new_list();
 	char *word = malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
+	int split_key_i = 0;
 	char j;
 	for (i=0; i<value_length; i++){
 		j = value[i];
 		if ((skip_space != 0) && (j == ' ' || j == '\t')){
 			continue;
 		}
-		if (j != split_key){
+		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
+		//	j, split_key[split_key_i], split_key_i);
+		if(j != split_key[split_key_i]){
 			word[word_i] = j;
 			word_i += 1;
 		}
 		else{
+			split_key_i += 1;
+		}
+		if (split_key[split_key_i] == '\x00'){
 			word[word_i] = '\x00';
 			word_i = 0;
+			split_key_i = 0;
 			list_append_char(&l, word);
 		}
 	}
@@ -502,20 +509,20 @@ list new_list_from_split_bin(char *value, int value_length,
 	return l;
 }
 
-list new_list_from_split_str(str *string, char split_key){
+list new_list_from_split_str(str *string, char *split_key){
 	return new_list_from_split_bin(string->value, string->length, split_key, 0);
 }
 
-list new_list_from_split_str_skip_space(str *string, char split_key){
+list new_list_from_split_str_skip_space(str *string, char *split_key){
 	return new_list_from_split_bin(string->value, string->length, split_key, 1);
 }
 
-list new_list_from_split_char(char *value, char split_key){
+list new_list_from_split_char(char *value, char *split_key){
 	int value_length = char_len(value);
 	return new_list_from_split_bin(value, value_length, split_key, 0);
 }
 
-list new_list_from_split_char_skip_space(char *value, char split_key){
+list new_list_from_split_char_skip_space(char *value, char *split_key){
 	int value_length = char_len(value);
 	return new_list_from_split_bin(value, value_length, split_key, 1);
 }
