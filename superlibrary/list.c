@@ -204,22 +204,7 @@ int list_find_char(list *l, char *value){
 	return -1;
 }
 
-int list_remove(list *l, int index){
-	//remove from index, return bool
-	if (index < 0){
-		fprintf(stderr, "[error] list_remove: index [%d] < 0\n", index);
-		return 0;
-	}
-	else if (index >= l->length){
-		fprintf(stderr, "[error] list_remove: index [%d] out of range\n", index);
-		return 0;
-	}
-	list_child *m = NULL;
-	int i;
-	m = l->start;
-	for (i=0; i<index; i++){
-		m = m->next;
-	}
+void list_remove_child(list *l, list_child *m){
 	if (m->prev == NULL && m->next == NULL){
 		l->start = NULL;
 		l->end = NULL;
@@ -236,41 +221,149 @@ int list_remove(list *l, int index){
 		m->prev->next = m->next;
 		m->next->prev = m->prev;
 	}
+	l->length -= 1;
 	list_child_reset(m);
 	free(m);
 	m = NULL;
-	l->length -= 1;
+}
+
+int list_remove(list *l, int index){
+	//remove from index, return bool
+	if (index < 0){
+		fprintf(stderr, "[error] list_remove: index [%d] < 0\n", index);
+		return 0;
+	}
+	else if (index >= l->length){
+		fprintf(stderr, "[error] list_remove: index [%d] out of range\n", index);
+		return 0;
+	}
+	list_child *m = NULL;
+	int i;
+	m = l->start;
+	for (i=0; i<index; i++){
+		m = m->next;
+	}
+	list_remove_child(l, m);
 	return 1;
 }
 
 int list_remove_int(list *l, int num){
 	//return bool
-	int index = list_find_int(l, num);
-	if (index < 0){
-		return 0;
+	list_child *m = NULL;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		if (m->data->type == DATA_TYPE_INT && m->data->num == num){
+			list_remove_child(l, m);
+			return 1;
+		}
+		m = m->next;
 	}
-	list_remove(l, index);
-	return 1;
+	return 0;
 }
 
 int list_remove_str(list *l, str *string){
 	//return bool
-	int index = list_find_str(l, string);
-	if (index < 0){
-		return 0;
+	list_child *m = NULL;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		if (m->data->type == DATA_TYPE_STR){
+			if (str_equal(m->data->string, string) == 1){
+				list_remove_child(l, m);
+				return 1;
+			}
+		}
+		m = m->next;
 	}
-	list_remove(l, index);
-	return 1;
+	return 0;
 }
 
 int list_remove_char(list *l, char *value){
 	//return bool
-	int index = list_find_char(l, value);
-	if (index < 0){
-		return 0;
+	list_child *m = NULL;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		if (m->data->type == DATA_TYPE_STR){
+			if (str_equal_char(m->data->string, value) == 1){
+				list_remove_child(l, m);
+				return 1;
+			}
+		}
+		m = m->next;
 	}
-	list_remove(l, index);
-	return 1;
+	return 0;
+}
+
+int list_remove_all_int(list *l, int num){
+	//return count
+	list_child *m = NULL;
+	list_child *m_next = NULL;
+	int count = 0;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		m_next = m->next;
+		if (m->data->type == DATA_TYPE_INT && m->data->num == num){
+			list_remove_child(l, m);
+			count += 1;
+		}
+		m = m_next;
+	}
+	return count;
+}
+
+int list_remove_all_str(list *l, str *string){
+	//return count
+	list_child *m = NULL;
+	list_child *m_next = NULL;
+	int count = 0;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		m_next = m->next;
+		if (m->data->type == DATA_TYPE_STR){
+			if (str_equal(m->data->string, string) == 1){
+				list_remove_child(l, m);
+				count += 1;
+			}
+		}
+		m = m_next;
+	}
+	return count;
+}
+
+int list_remove_all_char(list *l, char *value){
+	//return count
+	list_child *m = NULL;
+	list_child *m_next = NULL;
+	int count = 0;
+	m = l->start;
+	while (1){
+		if (m == NULL){
+			break;
+		}
+		m_next = m->next;
+		if (m->data->type == DATA_TYPE_STR){
+			if (str_equal_char(m->data->string, value) == 1){
+				list_remove_child(l, m);
+				count += 1;
+			}
+		}
+		m = m_next;
+	}
+	return count;
 }
 
 list_data *list_get(list *l, int index){
@@ -379,4 +472,50 @@ list new_list_from_range(int start, int end){
 		list_append_int(&l, i);
 	}
 	return l;
+}
+
+list new_list_from_split_bin(char *value, int value_length,
+	char split_key, char skip_space){
+	list l = new_list();
+	char *word = malloc(sizeof(char)*(value_length+1));
+	int i;
+	int word_i = 0;
+	char j;
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		if ((skip_space != 0) && (j == ' ' || j == '\t')){
+			continue;
+		}
+		if (j != split_key){
+			word[word_i] = j;
+			word_i += 1;
+		}
+		else{
+			word[word_i] = '\x00';
+			word_i = 0;
+			list_append_char(&l, word);
+		}
+	}
+	list_append_char(&l, word);
+	free(word);
+	word = NULL;
+	return l;
+}
+
+list new_list_from_split_str(str *string, char split_key){
+	return new_list_from_split_bin(string->value, string->length, split_key, 0);
+}
+
+list new_list_from_split_str_skip_space(str *string, char split_key){
+	return new_list_from_split_bin(string->value, string->length, split_key, 1);
+}
+
+list new_list_from_split_char(char *value, char split_key){
+	int value_length = char_len(value);
+	return new_list_from_split_bin(value, value_length, split_key, 0);
+}
+
+list new_list_from_split_char_skip_space(char *value, char split_key){
+	int value_length = char_len(value);
+	return new_list_from_split_bin(value, value_length, split_key, 1);
 }

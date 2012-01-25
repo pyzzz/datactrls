@@ -109,6 +109,16 @@ void test_str_list(){
 	printf("\n");
 }
 
+void test_split(){
+	printf("---- test_split -----\n");
+	str row = new_str("123, , , 1234, 12345");
+	list l = new_list_from_split_str_skip_space(&row, ',');
+	print_list(&l);
+	list_remove_all_char(&l, "");
+	print_list(&l);
+	printf("\n");
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -118,5 +128,6 @@ int main(int argc, char **argv){
 	test_equal();
 	test_list();
 	test_str_list();
+	test_split();
 	return 0;
 }
