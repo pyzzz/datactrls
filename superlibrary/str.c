@@ -139,7 +139,7 @@ int str_mid(str *string, int start, int end){
 		return 0;
 	}
 	else if (end < start){
-		fprintf(stderr, "[error] str_mid: end [%d] < start [%d]\n", start, end);
+		fprintf(stderr, "[error] str_mid: end [%d] < start [%d]\n", end, start);
 		return 0;
 	}
 	int new_length = end-start;
@@ -151,6 +151,31 @@ int str_mid(str *string, int start, int end){
 	string->length = new_length;
 	string->value = new_value;
 	return 1;
+}
+
+void str_strip(str *string){
+	int new_start = 0;
+	int new_end = string->length;
+	int i;
+	char j;
+	for (i=0; i<string->length; i++){
+		j = string->value[i];
+		if (j != ' ' && j != '\t'){
+			break;
+		}
+		new_start += 1;
+	}
+	for (i=string->length-1; i>=0; i--){
+		j = string->value[i];
+		if (j != ' ' && j != '\t'){
+			break;
+		}
+		new_end -= 1;
+	}
+	if (new_start > new_end){
+		new_start = new_end;
+	}
+	str_mid(string, new_start, new_end);
 }
 
 int str_equal(str *string_x, str *string_y){
@@ -186,6 +211,18 @@ void print_str(str *string){
 	for (i=0; i<string->length; i++){
 		printf("%c", string->value[i]);
 	}
+}
+
+void print_str_verbose(str *string){
+	printf("\"");
+	print_str(string);
+	printf("\"");
+	printf("[%d]", string->length);
+}
+
+void print_str_preview(str *string){
+	print_str_verbose(string);
+	printf("\n");
 }
 
 str new_str(char *value){

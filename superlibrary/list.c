@@ -466,11 +466,8 @@ void print_list(list *l){
 			printf("%d, ", m->data->num);
 		}
 		else if (m->data->type == DATA_TYPE_STR){
-			printf("\"");
-			print_str(m->data->string);
-			printf("\"");
-			printf("[%d], ", m->data->string->length);
-			//printf(", ");
+			print_str_verbose(m->data->string);
+			printf(", ");
 		}
 		else{
 			printf("NULL, ");
@@ -500,6 +497,7 @@ list new_list_from_range(int start, int end){
 list new_list_from_split_bin(char *value, int value_length,
 	char *split_key, char skip_space){
 	list l = new_list();
+	str string = new_str("");
 	int split_key_length = char_len(split_key);
 	char *word = malloc(sizeof(char)*(value_length+1));
 	int i;
@@ -508,9 +506,9 @@ list new_list_from_split_bin(char *value, int value_length,
 	char j;
 	for (i=0; i<value_length; i++){
 		j = value[i];
-		if ((skip_space != 0) && (j == ' ' || j == '\t')){
-			continue;
-		}
+		//if ((skip_space != 0) && (j == ' ' || j == '\t')){
+		//	continue;
+		//}
 		word[word_i] = j;
 		//word[word_i+1] = '\x00';
 		word_i += 1;
@@ -521,7 +519,11 @@ list new_list_from_split_bin(char *value, int value_length,
 			split_key_i = 0;
 		}
 		if (split_key[split_key_i] == '\x00'){
-			list_append_bin(&l, word, word_i-split_key_length);
+			str_set_bin(&string, word, word_i-split_key_length);
+			if (skip_space != 0){
+				str_strip(&string);
+			}
+			list_append_str(&l, &string);
 			word_i = 0;
 			split_key_i = 0;
 			word[0] = '\x00';
@@ -529,7 +531,11 @@ list new_list_from_split_bin(char *value, int value_length,
 		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
 		//	j, split_key[split_key_i], split_key_i);
 	}
-	list_append_bin(&l, word, word_i);
+	str_set_bin(&string, word, word_i);
+	if (skip_space != 0){
+		str_strip(&string);
+	}
+	list_append_str(&l, &string);
 	free(word);
 	word = NULL;
 	return l;

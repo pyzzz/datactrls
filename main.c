@@ -111,7 +111,7 @@ void test_str_list(){
 
 void test_split(){
 	printf("---- test_split -----\n");
-	str row = new_str_from_bin("_123___ ___ ___ 1234___ \x00_1", 27);
+	str row = new_str_from_bin("_123___ ___ ___ 0 	0___ \x00_1", 27);
 	list l = new_list_from_split_str_skip_space(&row, "___");
 	print_list(&l);
 	list_remove_all_char(&l, "");
@@ -119,6 +119,16 @@ void test_split(){
 	list ls = new_list_from_split_bin_space("id name 	cost\x00.date", 20);
 	print_list(&ls);
 	printf("\n");
+}
+
+void test_strip(){
+	printf("---- test_strip -----\n");
+	str string = new_str(" strip test 	");
+	str_strip(&string);
+	print_str_preview(&string);
+	str_set(&string, "  	");
+	str_strip(&string);
+	print_str_preview(&string);
 }
 
 int main(int argc, char **argv){
@@ -131,5 +141,6 @@ int main(int argc, char **argv){
 	test_list();
 	test_str_list();
 	test_split();
+	test_strip();
 	return 0;
 }
