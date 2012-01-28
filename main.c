@@ -8,7 +8,7 @@ void test_hello_world(){
 	printf("---- test_hello_world -----\n");
 	str string = new_str(NULL);
 	str end = new_str("end");
-	str_set(&string, "hello world");
+	str_set_char(&string, "hello world");
 	printf("value: %s length: %d\n", string.value, string.length);
 	printf("%s\n", end.value);
 	printf("\n");
@@ -18,7 +18,7 @@ void test_copy(){
 	printf("---- test_copy -----\n");
 	str src = new_str("before copy");
 	str dst = new_str_from_copy(&src);
-	str_set(&dst, "after copy");
+	str_set_char(&dst, "after copy");
 	printf("src: \"%s\" dst: \"%s\"\n", src.value, dst.value);
 	printf("\n");
 }
@@ -80,10 +80,13 @@ void test_list(){
 	list_append_str(&l, &string);
 	print_list(&l);
 	int num_get = 1;
+	int num_get_r = 7;
 	int num_find = 5;
 	int result_get = list_get_int(&l, num_get);
+	int result_get_r = list_get_int(&l, num_get_r);
 	int result_find = list_find_int(&l, num_find);
 	printf("list get %d: %d\n", num_get, result_get);
+	printf("list get %d: %d\n", num_get_r, result_get_r);
 	printf("list find %d: %d\n", num_find, result_find);
 	printf("\n");
 }
@@ -128,7 +131,7 @@ void test_strip(){
 	str string = new_str(" strip test 	");
 	str_strip(&string);
 	print_str_preview(&string);
-	str_set(&string, "  	");
+	str_set_char(&string, "  	");
 	str_strip(&string);
 	print_str_preview(&string);
 	printf("\n");
@@ -148,7 +151,15 @@ void test_convert(){
 	str string = new_str_from_int(1199900);
 	print_str_preview(&string);
 	int integer = new_int_from_char("-1090");
-	printf("%d", integer);
+	printf("%d\n", integer);
+	printf("\n");
+}
+
+void test_str_add(){
+	printf("---- test_str_add -----\n");
+	str string = new_str("_0");
+	str_add_char(&string, "_3210");
+	print_str_preview(&string);
 	printf("\n");
 }
 
@@ -165,5 +176,6 @@ int main(int argc, char **argv){
 	test_strip();
 	test_list_reset();
 	test_convert();
+	test_str_add();
 	return 0;
 }

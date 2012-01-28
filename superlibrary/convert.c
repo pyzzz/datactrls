@@ -1,4 +1,4 @@
-void str_set_int(str *string_p, int num){
+void str_set_int(str *string, int num){
 	byte minus = 0;
 	int length = 1;
 	char *value = NULL;
@@ -22,7 +22,7 @@ void str_set_int(str *string_p, int num){
 		value[0] = '-';
 	}
 	value[length] = '\x00';
-	str_set(string_p, value);
+	str_set_char(string, value);
 	free(value);
 	value = NULL;
 }
@@ -73,6 +73,6 @@ int new_int_from_char(char *value){
 	return new_int_from_bin(value, value_length);
 }
 
-int new_int_from_str(str *string_p){
-	return new_int_from_bin(string_p->value, string_p->length);
+int new_int_from_str(str *string){
+	return new_int_from_bin(string->value, string->length);
 }

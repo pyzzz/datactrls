@@ -39,12 +39,12 @@ void list_data_set_int(list_data *data, int num){
 	data->type = DATA_TYPE_INT;
 }
 
-void list_data_set_str(list_data *data, str *string_p){
+void list_data_set_str(list_data *data, str *string){
 	str_reset(data->string);
 	free(data->string);
 	data->string = NULL;
 	data->num = -1;
-	data->string = new_str_p_from_copy(string_p);
+	data->string = new_str_p_from_copy(string);
 	data->type = DATA_TYPE_STR;
 }
 
@@ -139,9 +139,9 @@ void list_insert_int(list *l, int num, int index){
 	list_insert(l, data, index);
 }
 
-void list_insert_str(list *l, str *string_p, int index){
+void list_insert_str(list *l, str *string, int index){
 	list_data *data = new_list_data_p();
-	list_data_set_str(data, string_p);
+	list_data_set_str(data, string);
 	list_insert(l, data, index);
 }
 
@@ -165,8 +165,8 @@ void list_append_int(list *l, int num){
 	list_insert_int(l, num, l->length);
 }
 
-void list_append_str(list *l, str *string_p){
-	list_insert_str(l, string_p, l->length);
+void list_append_str(list *l, str *string){
+	list_insert_str(l, string, l->length);
 }
 
 void list_append_char(list *l, char *value){
@@ -191,14 +191,14 @@ int list_find_int(list *l, int num){
 	return -1;
 }
 
-int list_find_str(list *l, str *string_p){
+int list_find_str(list *l, str *string){
 	//return index
 	list_child *m = NULL;
 	int i;
 	m = l->start;
 	for (i=0; i<l->length; i++){
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string_p) == 1){
+			if (str_equal(m->data->string, string) == 1){
 				return i;
 			}
 		}
@@ -300,7 +300,7 @@ int list_remove_int(list *l, int num){
 	return 0;
 }
 
-int list_remove_str(list *l, str *string_p){
+int list_remove_str(list *l, str *string){
 	//return bool
 	list_child *m = NULL;
 	m = l->start;
@@ -309,7 +309,7 @@ int list_remove_str(list *l, str *string_p){
 			break;
 		}
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string_p) == 1){
+			if (str_equal(m->data->string, string) == 1){
 				list_remove_child(l, m);
 				return 1;
 			}
@@ -317,7 +317,7 @@ int list_remove_str(list *l, str *string_p){
 		m = m->next;
 	}
 	fprintf(stderr, "[error] list_remove_str: \"%s\" not in list\n",
-		string_p->value);
+		string->value);
 	return 0;
 }
 
@@ -361,7 +361,7 @@ int list_remove_all_int(list *l, int num){
 	return count;
 }
 
-int list_remove_all_str(list *l, str *string_p){
+int list_remove_all_str(list *l, str *string){
 	//return count
 	list_child *m = NULL;
 	list_child *m_next = NULL;
@@ -373,7 +373,7 @@ int list_remove_all_str(list *l, str *string_p){
 		}
 		m_next = m->next;
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string_p) == 1){
+			if (str_equal(m->data->string, string) == 1){
 				list_remove_child(l, m);
 				count += 1;
 			}
@@ -415,11 +415,19 @@ list_data *list_get(list *l, int index){
 		fprintf(stderr, "[error] list_get: index [%d] out of range\n", index);
 		return NULL;
 	}
+	int i;
 	list_child *m = NULL;
-	int i = 0;
-	m = l->start;
-	for (i=0; i<index; i++){
-		m = m->next;
+	if (index <= (l->length / 2)){
+		m = l->start;
+		for (i=0; i<index; i++){
+			m = m->next;
+		}
+	}
+	else{
+		m = l->end;
+		for (i=(l->length-1-index); i>0; i--){
+			m = m->prev;
+		}
 	}
 	return m->data;
 }
@@ -457,7 +465,7 @@ str list_get_str(list *l, int index){
 char *list_get_char(list *l, int index){
 	//return char*
 	list_data *data = NULL;
-	char *result = malloc(sizeof(char)*1);
+	char *result = (char*) malloc(sizeof(char)*1);
 	result[0] = '\x00';
 	data = list_get(l, index);
 	if (data == NULL){
@@ -525,7 +533,7 @@ list new_list_from_split_bin(char *value, int value_length,
 	list l = new_list();
 	str string = new_str("");
 	int split_key_length = char_len(split_key);
-	char *word = malloc(sizeof(char)*(value_length+1));
+	char *word = (char*) malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
 	int split_key_i = 0;
@@ -567,12 +575,12 @@ list new_list_from_split_bin(char *value, int value_length,
 	return l;
 }
 
-list new_list_from_split_str(str *string_p, char *split_key){
-	return new_list_from_split_bin(string_p->value, string_p->length, split_key, 0);
+list new_list_from_split_str(str *string, char *split_key){
+	return new_list_from_split_bin(string->value, string->length, split_key, 0);
 }
 
-list new_list_from_split_str_skip_space(str *string_p, char *split_key){
-	return new_list_from_split_bin(string_p->value, string_p->length, split_key, 1);
+list new_list_from_split_str_skip_space(str *string, char *split_key){
+	return new_list_from_split_bin(string->value, string->length, split_key, 1);
 }
 
 list new_list_from_split_char(char *value, char *split_key){
@@ -587,7 +595,7 @@ list new_list_from_split_char_skip_space(char *value, char *split_key){
 
 list new_list_from_split_bin_space(char *value, int value_length){
 	list l = new_list();
-	char *word = malloc(sizeof(char)*(value_length+1));
+	char *word = (char*) malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
 	char j;
@@ -615,8 +623,8 @@ list new_list_from_split_bin_space(char *value, int value_length){
 	return l;
 }
 
-list new_list_from_split_str_space(str *string_p){
-	return new_list_from_split_bin_space(string_p->value, string_p->length);
+list new_list_from_split_str_space(str *string){
+	return new_list_from_split_bin_space(string->value, string->length);
 }
 
 list new_list_from_split_char_space(char *value){
