@@ -3,8 +3,12 @@ Library work on C for string and list(chain) handling.
 sample:
 str string = new_str("test replace abcabcabc");
 str_replace_char(&string, "abc", "1");
+
 list l = new_list_from_range(1, 11);
 str abc = new_str("abc");
 list_remove_int(&l, 10);
 list_append_str(&l, &abc);
 print_list(&l);
+
+int integer = new_int_from_char("-1090");
+printf("%d", integer);

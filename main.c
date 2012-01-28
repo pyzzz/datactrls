@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "superlibrary/superlibrary.c"
+//gcc -Wall -lm -c "%f"
+//gcc -Wall -lm -o "%e" "%f"
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -129,6 +131,25 @@ void test_strip(){
 	str_set(&string, "  	");
 	str_strip(&string);
 	print_str_preview(&string);
+	printf("\n");
+}
+
+void test_list_reset(){
+	printf("---- test_list_reset -----\n");
+	list l = new_list_from_split_char_skip_space("abc, 10, 5, _ _, 1", ",");
+	print_list(&l);
+	list_reset(&l);
+	print_list(&l);
+	printf("\n");
+}
+
+void test_convert(){
+	printf("---- test_convert -----\n");
+	str string = new_str_from_int(1199900);
+	print_str_preview(&string);
+	int integer = new_int_from_char("-1090");
+	printf("%d", integer);
+	printf("\n");
 }
 
 int main(int argc, char **argv){
@@ -142,5 +163,7 @@ int main(int argc, char **argv){
 	test_str_list();
 	test_split();
 	test_strip();
+	test_list_reset();
+	test_convert();
 	return 0;
 }

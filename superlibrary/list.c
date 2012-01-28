@@ -39,12 +39,12 @@ void list_data_set_int(list_data *data, int num){
 	data->type = DATA_TYPE_INT;
 }
 
-void list_data_set_str(list_data *data, str *string){
+void list_data_set_str(list_data *data, str *string_p){
 	str_reset(data->string);
 	free(data->string);
 	data->string = NULL;
 	data->num = -1;
-	data->string = new_str_p_from_copy(string);
+	data->string = new_str_p_from_copy(string_p);
 	data->type = DATA_TYPE_STR;
 }
 
@@ -139,9 +139,9 @@ void list_insert_int(list *l, int num, int index){
 	list_insert(l, data, index);
 }
 
-void list_insert_str(list *l, str *string, int index){
+void list_insert_str(list *l, str *string_p, int index){
 	list_data *data = new_list_data_p();
-	list_data_set_str(data, string);
+	list_data_set_str(data, string_p);
 	list_insert(l, data, index);
 }
 
@@ -165,8 +165,8 @@ void list_append_int(list *l, int num){
 	list_insert_int(l, num, l->length);
 }
 
-void list_append_str(list *l, str *string){
-	list_insert_str(l, string, l->length);
+void list_append_str(list *l, str *string_p){
+	list_insert_str(l, string_p, l->length);
 }
 
 void list_append_char(list *l, char *value){
@@ -191,14 +191,14 @@ int list_find_int(list *l, int num){
 	return -1;
 }
 
-int list_find_str(list *l, str *string){
+int list_find_str(list *l, str *string_p){
 	//return index
 	list_child *m = NULL;
 	int i;
 	m = l->start;
 	for (i=0; i<l->length; i++){
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string) == 1){
+			if (str_equal(m->data->string, string_p) == 1){
 				return i;
 			}
 		}
@@ -224,6 +224,22 @@ int list_find_char(list *l, char *value){
 }
 
 void list_remove_child(list *l, list_child *m){
+	/*byte in_list = 0;
+	list_child *n = NULL;
+	n = l->start;
+	while (1){
+		if (n == NULL){
+			break;
+		}
+		if (n == m){
+			in_list = 1;
+			break;
+		}
+		n = n->next;
+	}
+	if (in_list == 0){
+		fprintf(stderr, "[error] list_remove_child: list_child not in list\n");
+	}*/
 	if (m->prev == NULL && m->next == NULL){
 		l->start = NULL;
 		l->end = NULL;
@@ -280,10 +296,11 @@ int list_remove_int(list *l, int num){
 		}
 		m = m->next;
 	}
+	fprintf(stderr, "[error] list_remove_int: %d not in list\n", num);
 	return 0;
 }
 
-int list_remove_str(list *l, str *string){
+int list_remove_str(list *l, str *string_p){
 	//return bool
 	list_child *m = NULL;
 	m = l->start;
@@ -292,13 +309,15 @@ int list_remove_str(list *l, str *string){
 			break;
 		}
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string) == 1){
+			if (str_equal(m->data->string, string_p) == 1){
 				list_remove_child(l, m);
 				return 1;
 			}
 		}
 		m = m->next;
 	}
+	fprintf(stderr, "[error] list_remove_str: \"%s\" not in list\n",
+		string_p->value);
 	return 0;
 }
 
@@ -318,6 +337,7 @@ int list_remove_char(list *l, char *value){
 		}
 		m = m->next;
 	}
+	fprintf(stderr, "[error] list_remove_char: \"%s\" not in list\n", value);
 	return 0;
 }
 
@@ -341,7 +361,7 @@ int list_remove_all_int(list *l, int num){
 	return count;
 }
 
-int list_remove_all_str(list *l, str *string){
+int list_remove_all_str(list *l, str *string_p){
 	//return count
 	list_child *m = NULL;
 	list_child *m_next = NULL;
@@ -353,7 +373,7 @@ int list_remove_all_str(list *l, str *string){
 		}
 		m_next = m->next;
 		if (m->data->type == DATA_TYPE_STR){
-			if (str_equal(m->data->string, string) == 1){
+			if (str_equal(m->data->string, string_p) == 1){
 				list_remove_child(l, m);
 				count += 1;
 			}
@@ -453,6 +473,12 @@ char *list_get_char(list *l, int index){
 	return result;
 }
 
+void list_reset(list *l){
+	while (l->start != NULL){
+		list_remove_child(l, l->start);
+	}
+}
+
 void print_list(list *l){
 	list_child *m = NULL;
 	printf("list length: %d\n", l->length);
@@ -541,12 +567,12 @@ list new_list_from_split_bin(char *value, int value_length,
 	return l;
 }
 
-list new_list_from_split_str(str *string, char *split_key){
-	return new_list_from_split_bin(string->value, string->length, split_key, 0);
+list new_list_from_split_str(str *string_p, char *split_key){
+	return new_list_from_split_bin(string_p->value, string_p->length, split_key, 0);
 }
 
-list new_list_from_split_str_skip_space(str *string, char *split_key){
-	return new_list_from_split_bin(string->value, string->length, split_key, 1);
+list new_list_from_split_str_skip_space(str *string_p, char *split_key){
+	return new_list_from_split_bin(string_p->value, string_p->length, split_key, 1);
 }
 
 list new_list_from_split_char(char *value, char *split_key){
@@ -589,8 +615,8 @@ list new_list_from_split_bin_space(char *value, int value_length){
 	return l;
 }
 
-list new_list_from_split_str_space(str *string){
-	return new_list_from_split_bin_space(string->value, string->length);
+list new_list_from_split_str_space(str *string_p){
+	return new_list_from_split_bin_space(string_p->value, string_p->length);
 }
 
 list new_list_from_split_char_space(char *value){
