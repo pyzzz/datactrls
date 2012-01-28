@@ -238,11 +238,33 @@ int str_equal_char(str *string_x, char *value){
 	return 1;
 }
 
-void print_str(str *string){
+void print_bin(char *value, int value_length){
 	int i;
-	for (i=0; i<string->length; i++){
-		printf("%c", string->value[i]);
+	char j;
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		if (j >= 32 && j < 127){
+			printf("%c", j);
+		}
+		else if (j == 9){
+			printf("\\t");
+		}
+		else if (j == 10){
+			printf("\\n");
+		}
+		else if (j == 13){
+			printf("\\r");
+		}
+		else{
+			printf("\\x");
+			printf("%d", j/16);
+			printf("%d", j%16);
+		}
 	}
+}
+
+void print_str(str *string){
+	print_bin(string->value, string->length);
 }
 
 void print_str_verbose(str *string){

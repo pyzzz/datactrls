@@ -93,7 +93,7 @@ void list_insert(list *l, list_data *data, int index){
 	list_child *fault;
 	int i;
 	if (index < 0){
-		printf("[error] list_insert: index [%d] < 0\n", index);
+		fprintf(stderr, "[error] list_insert: index < 0 [%d]\n", index);
 		return;
 	}
 	m = (list_child*) malloc(sizeof(list_child));
@@ -224,6 +224,10 @@ int list_find_char(list *l, char *value){
 }
 
 void list_remove_child(list *l, list_child *m){
+	if (m == NULL){
+		fprintf(stderr, "[error] list_remove_child: m == NULL\n");
+		return;
+	}
 	/*byte in_list = 0;
 	list_child *n = NULL;
 	n = l->start;
@@ -265,11 +269,11 @@ void list_remove_child(list *l, list_child *m){
 int list_remove(list *l, int index){
 	//remove from index, return bool
 	if (index < 0){
-		fprintf(stderr, "[error] list_remove: index [%d] < 0\n", index);
+		fprintf(stderr, "[error] list_remove: index < 0 [%d]\n", index);
 		return 0;
 	}
 	else if (index >= l->length){
-		fprintf(stderr, "[error] list_remove: index [%d] out of range\n", index);
+		fprintf(stderr, "[error] list_remove: index out of range [%d]\n", index);
 		return 0;
 	}
 	list_child *m = NULL;
@@ -296,7 +300,7 @@ int list_remove_int(list *l, int num){
 		}
 		m = m->next;
 	}
-	fprintf(stderr, "[error] list_remove_int: %d not in list\n", num);
+	fprintf(stderr, "[error] list_remove_int: int not in list [%d]\n", num);
 	return 0;
 }
 
@@ -316,7 +320,7 @@ int list_remove_str(list *l, str *string){
 		}
 		m = m->next;
 	}
-	fprintf(stderr, "[error] list_remove_str: \"%s\" not in list\n",
+	fprintf(stderr, "[error] list_remove_str: str not in list [\"%s\"]\n",
 		string->value);
 	return 0;
 }
@@ -337,7 +341,8 @@ int list_remove_char(list *l, char *value){
 		}
 		m = m->next;
 	}
-	fprintf(stderr, "[error] list_remove_char: \"%s\" not in list\n", value);
+	fprintf(stderr, "[error] list_remove_char: char not in list [\"%s\"]\n",
+		value);
 	return 0;
 }
 
@@ -408,11 +413,11 @@ int list_remove_all_char(list *l, char *value){
 list_data *list_get(list *l, int index){
 	//return value address
 	if (index < 0){
-		fprintf(stderr, "[error] list_get: index [%d] < 0\n", index);
+		fprintf(stderr, "[error] list_get: index < 0 [%d]\n", index);
 		return NULL;
 	}
 	else if (index >= l->length){
-		fprintf(stderr, "[error] list_get: index [%d] out of range\n", index);
+		fprintf(stderr, "[error] list_get: index out of range [%d]\n", index);
 		return NULL;
 	}
 	int i;
@@ -440,7 +445,8 @@ int list_get_int(list *l, int index){
 		return -1;
 	}
 	else if (data->type != DATA_TYPE_INT){
-		fprintf(stderr, "[error] list_get_int: data type not int\n");
+		fprintf(stderr, "[error] list_get_int: data type not int [index:%d]\n",
+			index);
 		return -1;
 	}
 	return data->num;
@@ -455,7 +461,8 @@ str list_get_str(list *l, int index){
 		return result;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_str: data type not str\n");
+		fprintf(stderr, "[error] list_get_str: data type not str [index:%d]\n",
+			index);
 		return result;
 	}
 	str_set_bin(&result, data->string->value, data->string->length);
@@ -472,7 +479,8 @@ char *list_get_char(list *l, int index){
 		return result;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_char: data type not str\n");
+		fprintf(stderr, "[error] list_get_char: data type not str [index:%d]\n",
+			index);
 		return result;
 	}
 	free(result);

@@ -58,7 +58,8 @@ int new_int_from_bin(char *value, int value_length){
 		}
 		else
 		{
-			fprintf(stderr, "[error] new_int_from_bin: [%s] not digit\n", value);
+			fprintf(stderr, "[error] new_int_from_bin: not digit [\"%s\"]\n",
+				value);
 			return -1;
 		}
 	}
@@ -75,4 +76,182 @@ int new_int_from_char(char *value){
 
 int new_int_from_str(str *string){
 	return new_int_from_bin(string->value, string->length);
+}
+
+void hex_set_bin(str *hex, char *value, int value_length){
+	int i;
+	byte j;
+	byte k;
+	int new_length = value_length * 2;
+	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
+	for (i=0; i<value_length; i++){
+		j = value[i]%16;
+		k = value[i]/16;
+		if (j >= 0 && j < 10){
+			new_value[i*2+1] = '0'+j;
+		}
+		else if (j >= 10 && j < 16){
+			new_value[i*2+1] = 'a'+(j-10);
+		}
+		else{
+			new_value[i*2+1] = '?';
+		}
+		if (k >= 0 && k < 10){
+			new_value[i*2] = '0'+k;
+		}
+		else if (k >= 10 && k < 16){
+			new_value[i*2] = 'a'+(k-10);
+		}
+		else{
+			new_value[i*2] = '?';
+		}
+	}
+	new_value[new_length] = '\x00';
+	str_reset(hex);
+	hex->length = new_length;
+	hex->value = new_value;
+}
+
+void hex_set_char(str *hex, char *value){
+	int value_length = char_len(value);
+	hex_set_bin(hex, value, value_length);
+}
+
+void hex_set(str* hex, str* string){
+	hex_set_bin(hex, string->value, string->length);
+}
+
+str new_hex_from_bin(char *value, int value_length){
+	str hex = new_str(NULL);
+	hex_set_bin(&hex, value, value_length);
+	return hex;
+}
+
+str *new_hex_p_from_bin(char *value, int value_length){
+	str *hex = new_str_p(NULL);
+	hex_set_bin(hex, value, value_length);
+	return hex;
+}
+
+str new_hex_from_char(char *value){
+	str hex = new_str(NULL);
+	hex_set_char(&hex, value);
+	return hex;
+}
+
+str *new_hex_p_from_char(char *value){
+	str *hex = new_str_p(NULL);
+	hex_set_char(hex, value);
+	return hex;
+}
+
+str new_hex_from_str(str *string){
+	str hex = new_str(NULL);
+	hex_set(&hex, string);
+	return hex;
+}
+
+str *new_hex_p_from_str(str *string){
+	str *hex = new_str_p(NULL);
+	hex_set(hex, string);
+	return hex;
+}
+
+void str_set_hex_bin(str *string, char *hex_value, int hex_value_length){
+	if (hex_value_length % 2 > 0){
+		fprintf(stderr,
+		"[error] str_set_hex_bin: hex_value_length %% 2 > 0 [\"%s\"]\n",
+		hex_value);
+		return;
+	}
+	int i;
+	char j;
+	char k;
+	int new_length = hex_value_length / 2;
+	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
+	for (i=0; i<new_length; i++){
+		j = hex_value[i*2];
+		k = hex_value[i*2+1];
+		//printf("j: %d, k: %d\n", j, k);
+		new_value[i] = 0;
+		if (j >= '0' && j <= '9'){
+			new_value[i] += (j-'0')*16;
+		}
+		else if (j >= 'a' && j <= 'f'){
+			new_value[i] += (j-'a'+10)*16;
+		}
+		else if (j >= 'A' && j <= 'F'){
+			new_value[i] += (j-'A'+10)*16;
+		}
+		else{
+			fprintf(stderr, "[error] str_set_hex_bin: not hex [\"%s\"]\n",
+				hex_value);
+			return;
+		}
+		if (k >= '0' && k <= '9'){
+			new_value[i] += (k-'0');
+		}
+		else if (k >= 'a' && k <= 'f'){
+			new_value[i] += (k-'a'+10);
+		}
+		else if (k >= 'A' && k <= 'F'){
+			new_value[i] += (k-'A'+10);
+		}
+		else{
+			fprintf(stderr, "[error] str_set_hex_bin: not hex [\"%s\"]\n",
+				hex_value);
+			return;
+		}
+	}
+	new_value[new_length] = '\x00';
+	str_reset(string);
+	string->length = new_length;
+	string->value = new_value;
+}
+
+void str_set_hex_char(str *string, char *hex_value){
+	int hex_value_length = char_len(hex_value);
+	str_set_hex_bin(string, hex_value, hex_value_length);
+}
+
+void str_set_hex(str *string, str *hex){
+	str_set_hex_bin(string, hex->value, hex->length);
+}
+
+str new_str_from_hex_bin(char *hex_value, int hex_value_length){
+	str string = new_str(NULL);
+	str_set_hex_bin(&string, hex_value, hex_value_length);
+	return string;
+}
+
+str *new_str_p_from_hex_bin(char *hex_value, int hex_value_length){
+	str *string = new_str_p(NULL);
+	str_set_hex_bin(string, hex_value, hex_value_length);
+	return string;
+}
+
+str new_str_from_hex_char(char *hex_value){
+	str string = new_str(NULL);
+	int hex_value_length = char_len(hex_value);
+	str_set_hex_bin(&string, hex_value, hex_value_length);
+	return string;
+}
+
+str *new_str_p_from_hex_char(char *hex_value){
+	str *string = new_str_p(NULL);
+	int hex_value_length = char_len(hex_value);
+	str_set_hex_bin(string, hex_value, hex_value_length);
+	return string;
+}
+
+str new_str_from_hex(str *hex){
+	str string = new_str(NULL);
+	str_set_hex_bin(&string, hex->value, hex->length);
+	return string;
+}
+
+str *new_str_p_from_hex(str *hex){
+	str *string = new_str_p(NULL);
+	str_set_hex_bin(string, hex->value, hex->length);
+	return string;
 }

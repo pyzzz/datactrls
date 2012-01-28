@@ -163,6 +163,17 @@ void test_str_add(){
 	printf("\n");
 }
 
+void test_hex(){
+	printf("---- test_hex -----\n");
+	str hex = new_hex_from_char("ul101wm");
+	print_str_preview(&hex);
+	str string = new_str_from_hex(&hex);
+	print_str_preview(&string);
+	str_set_hex_char(&string, "5051525300");
+	print_str_preview(&string);
+	printf("\n");
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -177,5 +188,6 @@ int main(int argc, char **argv){
 	test_list_reset();
 	test_convert();
 	test_str_add();
+	test_hex();
 	return 0;
 }
