@@ -12,3 +12,8 @@ print_list(&l);
 
 int integer = new_int_from_char("-1090");
 printf("%d", integer);
+
+file io = new_file();
+file_open(&io, "abc.txt", "wb");
+file_write_char(&io, "abc\xff\x10");
+file_close(&io);

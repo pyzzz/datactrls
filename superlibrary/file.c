@@ -170,7 +170,6 @@ int file_write_str(file *io, str *string){
 
 char *file_read_char(file *io, int size){
 	int i;
-	char j;
 	if (io->fp == NULL){
 		fprintf(stderr, "[error] file_read_char: io->fp == NULL\n");
 		return NULL;
@@ -179,16 +178,19 @@ char *file_read_char(file *io, int size){
 		fprintf(stderr, "[error] file_read_char: file not open for read\n");
 		return NULL;
 	}
+	int size_max = (int) (io->size - ftell(io->fp));
+	if (size == -1 || size > size_max){
+		size = size_max;
+	}
 	char *value = (char*) malloc(sizeof(char)*(size+1));
 	for (i=0; i<size; i++){
-		j = fgetc(io->fp);
-		if (j == EOF){
-			fprintf(stderr, "[error] file_read_char: read error\n");
-			value[i] = '\x00';
-		}
-		value[i] = j;
+		value[i] = fgetc(io->fp);
 	}
 	return value;
+}
+
+char *file_read_char_all(file *io){
+	return file_read_char(io, -1);
 }
 
 void file_read_str(file *io, str *string, int size){
@@ -217,4 +219,8 @@ void file_read_str(file *io, str *string, int size){
 	str_set_bin(string, value, length);
 	free(value);
 	value = NULL;
+}
+
+void file_read_str_all(file *io, str *string){
+	return file_read_str(io, string, -1);
 }

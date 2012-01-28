@@ -1,6 +1,8 @@
 #include "superlibrary/superlibrary.c"
-//gcc -Wall -lm -c "%f"
-//gcc -Wall -lm -o "%e" "%f"
+//gcc -Wall -Wformat-security -lm -c "%f"
+//gcc -Wall -Wformat-security -lm -o "%e" "%f"
+//vagrind ./main
+//[2012-01-28] total heap usage: 183 allocs, 183 frees, 4,353 bytes allocated
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -10,6 +12,8 @@ void test_hello_world(){
 	printf("value: %s length: %d\n", string.value, string.length);
 	printf("%s\n", end.value);
 	printf("\n");
+	str_reset(&string);
+	str_reset(&end);
 }
 
 void test_copy(){
@@ -19,6 +23,8 @@ void test_copy(){
 	str_set_char(&dst, "after copy");
 	printf("src: \"%s\" dst: \"%s\"\n", src.value, dst.value);
 	printf("\n");
+	str_reset(&src);
+	str_reset(&dst);
 }
 
 void test_index(){
@@ -28,6 +34,8 @@ void test_index(){
 	int index = str_find(&string, &key);
 	printf("find \"%s\" in \"%s\": index = %d\n", key.value, string.value, index);
 	printf("\n");
+	str_reset(&string);
+	str_reset(&key);
 }
 
 void test_replace(){
@@ -42,6 +50,10 @@ void test_replace(){
 	str_replace_char(&string_before, "abc", "1");
 	printf("replace: %s\n", string_before.value);
 	printf("\n");
+	str_reset(&replace_before);
+	str_reset(&replace_after);
+	str_reset(&string_before);
+	str_reset(&string_after);
 }
 
 void test_mid(){
@@ -52,6 +64,8 @@ void test_mid(){
 	printf("new string: %s\n", string_new.value);
 	printf("mid string: %s\n", string.value);
 	printf("\n");
+	str_reset(&string);
+	str_reset(&string_new);
 }
 
 void test_equal(){
@@ -67,6 +81,9 @@ void test_equal(){
 	result = str_equal_char(&string_x, "abcde");
 	printf("str_equal_char string_x \"abcde\": %d\n", result);
 	printf("\n");
+	str_reset(&string_x);
+	str_reset(&string_y);
+	str_reset(&string_z);
 }
 
 void test_list(){
@@ -87,6 +104,8 @@ void test_list(){
 	printf("list get %d: %d\n", num_get_r, result_get_r);
 	printf("list find %d: %d\n", num_find, result_find);
 	printf("\n");
+	str_reset(&string);
+	list_reset(&l);
 }
 
 void test_str_list(){
@@ -110,6 +129,10 @@ void test_str_list(){
 	printf("list get %d: %s\n", num_get, result_get.value);
 	printf("list find %s: %d\n", "100", result_find);
 	printf("\n");
+	str_reset(&start);
+	str_reset(&temp);
+	str_reset(&result_get);
+	list_reset(&l);
 }
 
 void test_split(){
@@ -122,6 +145,9 @@ void test_split(){
 	list ls = new_list_from_split_bin_space("id name 	cost\x00.date", 20);
 	print_list(&ls);
 	printf("\n");
+	str_reset(&row);
+	list_reset(&l);
+	list_reset(&ls);
 }
 
 void test_strip(){
@@ -133,6 +159,7 @@ void test_strip(){
 	str_strip(&string);
 	print_str_preview(&string);
 	printf("\n");
+	str_reset(&string);
 }
 
 void test_list_reset(){
@@ -142,6 +169,7 @@ void test_list_reset(){
 	list_reset(&l);
 	print_list(&l);
 	printf("\n");
+	list_reset(&l);
 }
 
 void test_convert(){
@@ -151,6 +179,7 @@ void test_convert(){
 	int integer = new_int_from_char("-1090");
 	printf("%d\n", integer);
 	printf("\n");
+	str_reset(&string);
 }
 
 void test_str_add(){
@@ -159,6 +188,7 @@ void test_str_add(){
 	str_add_char(&string, "_3210");
 	print_str_preview(&string);
 	printf("\n");
+	str_reset(&string);
 }
 
 void test_hex(){
@@ -170,6 +200,8 @@ void test_hex(){
 	str_set_hex_char(&string, "5051525300");
 	print_str_preview(&string);
 	printf("\n");
+	str_reset(&hex);
+	str_reset(&string);
 }
 
 void test_file(){
@@ -181,13 +213,15 @@ void test_file(){
 	file_close(&io);
 	str string = new_str(NULL);
 	file_open(&io, path.value, "rb");
-	file_read_str(&io, &string, -1);
+	file_read_str_all(&io, &string);
 	file_close(&io);
 	print_str_preview(&string);
 	hex_set(&string, &string);
 	print_str_preview(&string);
 	file_remove(path.value);
 	printf("\n");
+	str_reset(&path);
+	str_reset(&string);
 }
 
 int main(int argc, char **argv){

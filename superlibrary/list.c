@@ -551,7 +551,7 @@ list new_list_from_split_bin(char *value, int value_length,
 		fprintf(stderr, "[error] new_list_from_split_bin: split_key == NULL\n");
 		return l;
 	}
-	str string = new_str("");
+	str *string = new_str_p("");
 	int split_key_length = char_len(split_key);
 	char *word = (char*) malloc(sizeof(char)*(value_length+1));
 	int i;
@@ -573,11 +573,11 @@ list new_list_from_split_bin(char *value, int value_length,
 			split_key_i = 0;
 		}
 		if (split_key[split_key_i] == '\x00'){
-			str_set_bin(&string, word, word_i-split_key_length);
+			str_set_bin(string, word, word_i-split_key_length);
 			if (skip_space != 0){
-				str_strip(&string);
+				str_strip(string);
 			}
-			list_append_str(&l, &string);
+			list_append_str(&l, string);
 			word_i = 0;
 			split_key_i = 0;
 			word[0] = '\x00';
@@ -585,13 +585,16 @@ list new_list_from_split_bin(char *value, int value_length,
 		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
 		//	j, split_key[split_key_i], split_key_i);
 	}
-	str_set_bin(&string, word, word_i);
+	str_set_bin(string, word, word_i);
 	if (skip_space != 0){
-		str_strip(&string);
+		str_strip(string);
 	}
-	list_append_str(&l, &string);
+	list_append_str(&l, string);
+	str_reset(string);
 	free(word);
+	free(string);
 	word = NULL;
+	string = NULL;
 	return l;
 }
 
