@@ -49,6 +49,10 @@ void str_set(str *string, str *src){
 }
 
 void str_add_bin(str *string, char *value, int value_length){
+	if (value == NULL){
+		fprintf(stderr, "str_add_bin error: value == NULL\n");
+		return;
+	}
 	int i;
 	int new_length = string->length + value_length;
 	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
@@ -241,6 +245,12 @@ int str_equal_char(str *string_x, char *value){
 void print_bin(char *value, int value_length){
 	int i;
 	char j;
+	char k;
+	char l;
+	if (value == NULL){
+		fprintf(stderr, "[error] print_bin: value == NULL\n");
+		return;
+	}
 	for (i=0; i<value_length; i++){
 		j = value[i];
 		if (j >= 32 && j < 127){
@@ -257,8 +267,11 @@ void print_bin(char *value, int value_length){
 		}
 		else{
 			printf("\\x");
-			printf("%d", j/16);
-			printf("%d", j%16);
+			k = ((unsigned char) j)/16;
+			l = ((unsigned char) j)%16;
+			k = (k >= 10) ? ('a' + (k - 10)) : ('0' + k);
+			l = (l >= 10) ? ('a' + (l - 10)) : ('0' + l);
+			printf("%c%c", k, l);
 		}
 	}
 }

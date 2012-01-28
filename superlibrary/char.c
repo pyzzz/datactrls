@@ -8,6 +8,10 @@ typedef struct char_replace_result char_replace_result;
 
 int char_len(char *value){
 	int length = 0;
+	if (value == NULL){
+		fprintf(stderr, "char_len error: value == NULL\n");
+		return length;
+	}
 	while (1){
 		if (value[length] != '\x00'){
 			length++;
@@ -86,6 +90,24 @@ char_replace_result char_replace_from(char* value, int value_length,
 	char* before, int before_length, char* after, int after_length, int from){
 	int before_index;
 	char_replace_result result;
+	if (value == NULL){
+		fprintf(stderr, "char_replace_from error: value == NULL\n");
+		result.index = -1;
+		result.count = 0;
+		return result;
+	}
+	if (before == NULL){
+		fprintf(stderr, "char_replace_from error: before == NULL\n");
+		result.index = -1;
+		result.count = 0;
+		return result;
+	}
+	if (after == NULL){
+		fprintf(stderr, "char_replace_from error: after == NULL\n");
+		result.index = -1;
+		result.count = 0;
+		return result;
+	}
 	before_index = char_find_from(value, value_length, before, before_length, from);
 	if (before_index == -1){
 		result.index = before_index;

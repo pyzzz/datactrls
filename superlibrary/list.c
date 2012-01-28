@@ -49,6 +49,10 @@ void list_data_set_str(list_data *data, str *string){
 }
 
 void list_data_set_bin(list_data *data, char *value, int value_length){
+	if (value == NULL){
+		fprintf(stderr, "[error] list_data_set_bin: value == NULL\n");
+		return;
+	}
 	str_reset(data->string);
 	free(data->string);
 	data->string = NULL;
@@ -539,6 +543,14 @@ list new_list_from_range(int start, int end){
 list new_list_from_split_bin(char *value, int value_length,
 	char *split_key, char skip_space){
 	list l = new_list();
+	if (value == NULL){
+		fprintf(stderr, "[error] new_list_from_split_bin: value == NULL\n");
+		return l;
+	}
+	if (split_key == NULL){
+		fprintf(stderr, "[error] new_list_from_split_bin: split_key == NULL\n");
+		return l;
+	}
 	str string = new_str("");
 	int split_key_length = char_len(split_key);
 	char *word = (char*) malloc(sizeof(char)*(value_length+1));
@@ -603,6 +615,10 @@ list new_list_from_split_char_skip_space(char *value, char *split_key){
 
 list new_list_from_split_bin_space(char *value, int value_length){
 	list l = new_list();
+	if (value == NULL){
+		fprintf(stderr, "[error] new_list_from_split_bin_space: value == NULL\n");
+		return l;
+	}
 	char *word = (char*) malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;

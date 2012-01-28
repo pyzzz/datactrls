@@ -22,7 +22,7 @@ void str_set_int(str *string, int num){
 		value[0] = '-';
 	}
 	value[length] = '\x00';
-	str_set_char(string, value);
+	str_set_bin(string, value, length); //duplicate copy
 	free(value);
 	value = NULL;
 }
@@ -44,6 +44,10 @@ int new_int_from_bin(char *value, int value_length){
 	int i = 0;
 	byte minus;
 	char j;
+	if (value == NULL){
+		fprintf(stderr, "[error] new_int_from_bin: value == NULL\n");
+		return -1;
+	}
 	if (value_length == 0){
 		return 0;
 	}
@@ -80,31 +84,21 @@ int new_int_from_str(str *string){
 
 void hex_set_bin(str *hex, char *value, int value_length){
 	int i;
-	byte j;
-	byte k;
+	char j;
+	char k;
+	if (value == NULL){
+		fprintf(stderr, "[error] hex_set_bin: value == NULL\n");
+		return;
+	}
 	int new_length = value_length * 2;
 	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
 	for (i=0; i<value_length; i++){
-		j = value[i]%16;
-		k = value[i]/16;
-		if (j >= 0 && j < 10){
-			new_value[i*2+1] = '0'+j;
-		}
-		else if (j >= 10 && j < 16){
-			new_value[i*2+1] = 'a'+(j-10);
-		}
-		else{
-			new_value[i*2+1] = '?';
-		}
-		if (k >= 0 && k < 10){
-			new_value[i*2] = '0'+k;
-		}
-		else if (k >= 10 && k < 16){
-			new_value[i*2] = 'a'+(k-10);
-		}
-		else{
-			new_value[i*2] = '?';
-		}
+		j = ((unsigned char) value[i])%16;
+		k = ((unsigned char) value[i])/16;
+		j = (j >= 10) ? ('a' + (j - 10)) : ('0' + j);
+		k = (k >= 10) ? ('a' + (k - 10)) : ('0' + k);
+		new_value[i*2+1] = j;
+		new_value[i*2] = k;
 	}
 	new_value[new_length] = '\x00';
 	str_reset(hex);
@@ -158,6 +152,10 @@ str *new_hex_p_from_str(str *string){
 }
 
 void str_set_hex_bin(str *string, char *hex_value, int hex_value_length){
+	if (hex_value == NULL){
+		fprintf(stderr, "[error] str_set_hex_bin: hex_value == NULL\n");
+		return;
+	}
 	if (hex_value_length % 2 > 0){
 		fprintf(stderr,
 		"[error] str_set_hex_bin: hex_value_length %% 2 > 0 [\"%s\"]\n",

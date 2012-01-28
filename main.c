@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "superlibrary/superlibrary.c"
 //gcc -Wall -lm -c "%f"
 //gcc -Wall -lm -o "%e" "%f"
@@ -174,6 +172,24 @@ void test_hex(){
 	printf("\n");
 }
 
+void test_file(){
+	printf("---- test_file -----\n");
+	str path = new_str("abc.txt");
+	file io = new_file();
+	file_open(&io, path.value, "wb");
+	file_write_char(&io, "abc\xff\x10");
+	file_close(&io);
+	str string = new_str(NULL);
+	file_open(&io, path.value, "rb");
+	file_read_str(&io, &string, -1);
+	file_close(&io);
+	print_str_preview(&string);
+	hex_set(&string, &string);
+	print_str_preview(&string);
+	file_remove(path.value);
+	printf("\n");
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -189,5 +205,6 @@ int main(int argc, char **argv){
 	test_convert();
 	test_str_add();
 	test_hex();
+	test_file();
 	return 0;
 }
