@@ -228,6 +228,20 @@ int str_equal(str *string_x, str *string_y){
 	return 1;
 }
 
+int str_equal_bin(str *string_x, char *value, int value_length){
+	//return bool
+	int i;
+	if (string_x->length != value_length){
+		return 0;
+	}
+	for (i=0; i<string_x->length; i++){
+		if (string_x->value[i] != value[i]){
+			return 0;
+		}
+	}
+	return 1;
+}
+
 int str_equal_char(str *string_x, char *value){
 	int i;
 	int length = char_len(value);

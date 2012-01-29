@@ -1,8 +1,9 @@
 #include "superlibrary/superlibrary.c"
-//gcc -Wall -Wformat-security -lm -c "%f"
-//gcc -Wall -Wformat-security -lm -o "%e" "%f"
-//vagrind ./main
-//[2012-01-28] total heap usage: 183 allocs, 183 frees, 4,353 bytes allocated
+/*gcc -Wall -Wformat-security -g -lm -c "%f"
+gcc -Wall -Wformat-security -g -lm -o "%e" "%f"
+-g debug
+valgrind -v --error-limit=no --leak-check=full ./main
+[2012-01-29] total heap usage: 212 allocs, 212 frees, 5,044 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -224,6 +225,27 @@ void test_file(){
 	str_reset(&string);
 }
 
+void test_dictree(){
+	printf("---- test_dictree -----\n");
+	dictree dict = new_dict();
+	dictree_set_char(&dict, "abc", "_abc");
+	dictree_set_char(&dict, "abcd", "_abcd");
+	dictree_set_char(&dict, "wmwm", "_wmwm");
+	dictree_set_char(&dict, "_bcd", "0");
+	print_dictree(&dict);
+	dictree_remove_from_char(&dict, "_bcd");
+	print_dictree(&dict);
+	str string = dictree_get_str_from_char(&dict, "abcd");
+	print_str_preview(&string);
+	dictree_reset(&dict);
+	print_dictree(&dict);
+	printf("\n");
+	dictree_reset(&dict);
+	str_reset(&string);
+	free(dict.root);
+	dict.root = NULL;
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -240,5 +262,6 @@ int main(int argc, char **argv){
 	test_str_add();
 	test_hex();
 	test_file();
+	test_dictree();
 	return 0;
 }

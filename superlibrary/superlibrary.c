@@ -11,3 +11,4 @@ typedef char byte;
 #include "list.c"
 #include "convert.c"
 #include "file.c"
+#include "dictree.c"
