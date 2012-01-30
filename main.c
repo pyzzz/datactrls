@@ -3,7 +3,7 @@
 gcc -Wall -Wformat-security -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
-[2012-01-29] total heap usage: 212 allocs, 212 frees, 5,044 bytes allocated*/
+[2012-01-30] total heap usage: 341 allocs, 341 frees, 7,418 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -227,7 +227,7 @@ void test_file(){
 
 void test_dictree(){
 	printf("---- test_dictree -----\n");
-	dictree dict = new_dict();
+	dictree dict = new_dictree();
 	dictree_set_char(&dict, "abc", "_abc");
 	dictree_set_char(&dict, "abcd", "_abcd");
 	dictree_set_char(&dict, "wmwm", "_wmwm");
@@ -240,10 +240,41 @@ void test_dictree(){
 	dictree_reset(&dict);
 	print_dictree(&dict);
 	printf("\n");
-	dictree_reset(&dict);
+	dictree_destroy(&dict);
 	str_reset(&string);
-	free(dict.root);
-	dict.root = NULL;
+}
+
+void test_extend(){
+	printf("---- test_extend -----\n");
+	dictree dict = new_dictree();
+	dictree_set_char(&dict, "abc", "_abc");
+	dictree_set_char(&dict, "abcd", "_abcd");
+	dictree_set_char(&dict, "wmwm", "_wmwm");
+	print_dictree(&dict);
+	dictree dict_extend = new_dictree();
+	dictree_set_char(&dict_extend, "abc", "_abcabc");
+	dictree_set_char(&dict_extend, "zzz", "1");
+	dictree_extend(&dict, &dict_extend);
+	print_dictree(&dict_extend);
+	dictree dict_copy = new_dictree_from_copy(&dict);
+	print_dictree(&dict_copy);
+	printf("\n");
+	dictree_destroy(&dict);
+	dictree_destroy(&dict_extend);
+	dictree_destroy(&dict_copy);
+}
+
+void test_format(){
+	printf("---- test_format -----\n");
+	str string = new_str_from_bin("0:\x00, 1:\x01, n:\n", 13);
+	dictree dict = new_dictree_from_format_str_skip_space(&string, ':', ',');
+	print_dictree(&dict);
+	dictree_format_char_skip_space(&dict,
+		"0 = zero, 10 = ten, 100 = hundred", '=', ',');
+	print_dictree(&dict);
+	printf("\n");
+	str_reset(&string);
+	dictree_destroy(&dict);
 }
 
 int main(int argc, char **argv){
@@ -263,5 +294,7 @@ int main(int argc, char **argv){
 	test_hex();
 	test_file();
 	test_dictree();
+	test_extend();
+	test_format();
 	return 0;
 }

@@ -178,6 +178,9 @@ int str_mid(str *string, int start, int end){
 		fprintf(stderr, "[error] str_mid: end [%d] < start [%d]\n", end, start);
 		return 0;
 	}
+	if (start == 0 && end == string->length){
+		return 0;
+	}
 	int new_length = end-start;
 	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
 	//char_clear(new_value, new_length+1, '\x00');

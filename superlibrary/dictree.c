@@ -23,13 +23,13 @@ dict_node *new_dict_node_p(char symbol){
 	return node;
 }
 
-dictree new_dict(){
+dictree new_dictree(){
 	dictree dict;
 	dict.root = new_dict_node_p('\x00');
 	return dict;
 }
 
-dictree *new_dict_p(){
+dictree *new_dictree_p(){
 	dictree *dict = (dictree*) malloc(sizeof(dictree));
 	dict->root = new_dict_node_p('\x00');
 	return dict;
@@ -87,6 +87,12 @@ void dictree_reset(dictree *dict){
 	dict_node_reset(dict->root);
 }
 
+void dictree_destroy(dictree *dict){
+	dictree_reset(dict);
+	free(dict->root);
+	dict->root = NULL;
+}
+
 void dictree_set_bin(dictree *dict, char *key, int key_length,
 	char *value, int value_length){
 	if (key == NULL){
@@ -95,6 +101,10 @@ void dictree_set_bin(dictree *dict, char *key, int key_length,
 	}
 	if (value == NULL){
 		fprintf(stderr, "[error] dictree_set_bin: value == NULL\n");
+		return;
+	}
+	if (dict == NULL){
+		fprintf(stderr, "[error] dictree_set_bin: dict == NULL\n");
 		return;
 	}
 	if (dict->root == NULL){
@@ -155,6 +165,10 @@ dict_node *dictree_get_dict_node(dictree *dict, char *key, int key_value){
 		fprintf(stderr, "[error] dictree_get_dict_node: key == NULL\n");
 		return NULL;
 	}
+	if (dict == NULL){
+		fprintf(stderr, "[error] dictree_get_dict_node: dict == NULL\n");
+		return NULL;
+	}
 	if (dict->root == NULL){
 		fprintf(stderr, "[error] dictree_get_dict_node: dict->root == NULL\n");
 		return NULL;
@@ -196,9 +210,13 @@ int dictree_remove_from_bin(dictree *dict, char *key, int key_length){
 		fprintf(stderr, "[error] dictree_remove_from_bin: %s not in dict", key);
 		return -1;
 	}
+	if (dict == NULL){
+		fprintf(stderr, "[error] dictree_remove_from_bin: dict == NULL\n");
+		return -2;
+	}
 	if (dict->root == NULL){
 		fprintf(stderr, "[error] dictree_remove_from_bin: dict->root == NULL\n");
-		return -2;
+		return -3;
 	}
 	if (node->key != NULL){
 		str_reset(node->key);
@@ -238,6 +256,10 @@ void print_dict_node(dict_node *node){
 }
 
 void print_dictree(dictree *dict){
+	if (dict == NULL){
+		fprintf(stderr, "[error] print_dictree: dict == NULL\n");
+		return;
+	}
 	if (dict->root == NULL){
 		fprintf(stderr, "[error] print_dictree: dict->root == NULL\n");
 		return;
@@ -246,4 +268,245 @@ void print_dictree(dictree *dict){
 	print_dict_node(dict->root);
 	printf("}");
 	printf("\n");
+}
+
+void dict_node_extend(dict_node *node, dictree *dst){
+	if (node->key != NULL && node->value != NULL){
+		dictree_set_str(dst, node->key, node->value);
+	}
+	if (node->next != NULL){
+		dict_node_extend(node->next, dst);
+	}
+	if (node->child != NULL){
+		dict_node_extend(node->child, dst);
+	}
+	
+}
+
+void dictree_extend(dictree *src, dictree *dst){
+	if (src == NULL){
+		fprintf(stderr, "[error] dictree_extend: src == NULL\n");
+		return;
+	}
+	if (dst == NULL){
+		fprintf(stderr, "[error] dictree_extend: dst == NULL\n");
+		return;
+	}
+	if (src->root == NULL){
+		fprintf(stderr, "[error] dictree_extend: src->root == NULL\n");
+		return;
+	}
+	if (dst->root == NULL){
+		fprintf(stderr, "[error] dictree_extend: dst->root == NULL\n");
+		return;
+	}
+	dict_node_extend(src->root, dst);
+}
+
+dictree new_dictree_from_copy(dictree *src){
+	dictree dict = new_dictree();
+	dictree_extend(src, &dict);
+	return dict;
+}
+
+dictree *new_dictree_p_from_copy(dictree *src){
+	dictree *dict = new_dictree_p();
+	dictree_extend(src, dict);
+	return dict;
+}
+
+void dictree_format_bin(dictree *dict, char *value, int value_length,
+	char key_after, char value_after, byte skip_space){
+	int i;
+	char j;
+	byte mode = 0; // 0: key, 1: value
+	int key_buf_i = 0;
+	int value_buf_i = 0;
+	char *key_buf = (char*) malloc(sizeof(char)*(value_length+1));
+	char *value_buf = (char*) malloc(sizeof(char)*(value_length+1));
+	str *key_str = new_str_p(NULL);
+	str *value_str = new_str_p(NULL);
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		if (j == key_after){
+			mode = 1;
+		}
+		else if (j == value_after){
+			if (key_buf_i == 0 || value_buf_i == 0){
+				fprintf(stderr,
+				"[error] dictree_set_format_from_bin: format error [%s]",
+				value);
+				break;
+			}
+			mode = 0;
+			key_buf[key_buf_i] = '\x00';
+			value_buf[value_buf_i] = '\x00';
+			if (skip_space != 0){
+				str_set_bin(key_str, key_buf, key_buf_i);
+				str_set_bin(value_str, value_buf, value_buf_i);
+				str_strip(key_str);
+				str_strip(value_str);
+				dictree_set_str(dict, key_str, value_str);
+			}
+			else{
+				dictree_set_bin(dict, key_buf, key_buf_i, value_buf, value_buf_i);
+			}
+			key_buf_i = 0;
+			value_buf_i = 0;
+			key_buf[0] = '\x00';
+			value_buf[0] = '\x00';
+		}
+		else if (mode == 0){
+			key_buf[key_buf_i] = j;
+			key_buf_i += 1;
+		}
+		else if (mode == 1){
+			value_buf[value_buf_i] = j;
+			value_buf_i += 1;
+		}
+	}
+	if (key_buf_i != 0 && value_buf_i != 0){
+		if (skip_space != 0){
+			str_set_bin(key_str, key_buf, key_buf_i);
+			str_set_bin(value_str, value_buf, value_buf_i);
+			str_strip(key_str);
+			str_strip(value_str);
+			dictree_set_str(dict, key_str, value_str);
+		}
+		else{
+			dictree_set_bin(dict, key_buf, key_buf_i, value_buf, value_buf_i);
+		}
+	}
+	free(key_buf);
+	free(value_buf);
+	str_reset(key_str);
+	str_reset(value_str);
+	free(key_str);
+	free(value_str);
+	key_buf = NULL;
+	value_buf = NULL;
+	key_str = NULL;
+	value_str = NULL;
+}
+
+void dictree_format_char(dictree *dict, char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 0);
+}
+
+void dictree_format_str(dictree *dict, str *string,
+	char key_after, char value_after){
+	dictree_format_bin(dict,
+		string->value, string->length, key_after, value_after, 0);
+}
+
+void dictree_format_bin_skip_space(dictree *dict, char *value, int value_length,
+	char key_after, char value_after){
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 1);
+}
+
+void dictree_format_char_skip_space(dictree *dict, char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 1);
+}
+
+void dictree_format_str_skip_space(dictree *dict, str *string,
+	char key_after, char value_after){
+	dictree_format_bin(dict,
+		string->value, string->length, key_after, value_after, 1);
+}
+
+dictree new_dictree_from_format_bin(char *value, int value_length,
+	char key_after, char value_after){
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict, value, value_length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_bin(char *value, int value_length,
+	char key_after, char value_after){
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree new_dictree_from_format_char(char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict, value, value_length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_char(char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree new_dictree_from_format_str(str *string,
+	char key_after, char value_after){
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict,
+		string->value, string->length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_str(str *string,
+	char key_after, char value_after){
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict,
+		string->value, string->length, key_after, value_after, 0);
+	return dict;
+}
+
+dictree new_dictree_from_format_bin_skip_space(char *value, int value_length,
+	char key_after, char value_after){
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict, value, value_length, key_after, value_after, 1);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_bin_skip_space(char *value, int value_length,
+	char key_after, char value_after){
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 1);
+	return dict;
+}
+
+
+dictree new_dictree_from_format_char_skip_space(char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict, value, value_length, key_after, value_after, 1);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_char_skip_space(char *value,
+	char key_after, char value_after){
+	int value_length = char_len(value);
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict, value, value_length, key_after, value_after, 1);
+	return dict;
+}
+
+dictree new_dictree_from_format_str_skip_space(str *string,
+	char key_after, char value_after){
+	dictree dict = new_dictree();
+	dictree_format_bin(&dict,
+		string->value, string->length, key_after, value_after, 1);
+	return dict;
+}
+
+dictree *new_dictree_p_from_format_str_skip_space(str *string,
+	char key_after, char value_after){
+	dictree *dict = new_dictree_p();
+	dictree_format_bin(dict,
+		string->value, string->length, key_after, value_after, 1);
+	return dict;
 }
