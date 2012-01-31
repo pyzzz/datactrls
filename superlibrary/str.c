@@ -3,15 +3,20 @@ struct str{
 	char *value;
 };
 typedef struct str str;
+str new_str(char *value);
 str *new_str_p(char *value);
 
-void str_reset(str *string){
+void str_reset_with(str *string, int length, char *value){
 	if (string == NULL){
 		return;
 	}
 	free(string->value);
-	string->length = 0;
-	string->value = NULL;
+	string->length = length;
+	string->value = value;
+}
+
+void str_reset(str *string){
+	str_reset_with(string, 0, NULL);
 }
 
 int str_find_from(str *string, str *key, int start){
@@ -25,23 +30,19 @@ int str_find(str *string, str *key){
 }
 
 void str_set_bin(str *string, char *value, int length){
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "str_set_bin error: value == NULL\n");
 		return;
 	}
-	int i;
-	str_reset(string);
-	string->length = length;
-	string->value = (char*) malloc(sizeof(char)*(length+1));
-	for (i=0; i<length; i++){
-		string->value[i] = value[i];
-	}
+	#endif
+	str_reset_with(string, length, malloc(sizeof(char)*(length+1)));
+	memcpy(string->value, value, length);
 	string->value[length] = '\x00';
 }
 
 void str_set_char(str *string, char *value){
-	int length = char_len(value);
-	str_set_bin(string, value, length);
+	str_set_bin(string, value, strlen(value));
 }
 
 void str_set(str *string, str *src){
@@ -49,71 +50,55 @@ void str_set(str *string, str *src){
 }
 
 void str_add_bin(str *string, char *value, int value_length){
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "str_add_bin error: value == NULL\n");
 		return;
 	}
-	int i;
+	#endif
 	int new_length = string->length + value_length;
-	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
-	int new_value_i = 0;
-	for (i=0; i<string->length; i++){
-		new_value[new_value_i] = string->value[i];
-		new_value_i += 1;
-	}
-	for (i=0; i<value_length; i++){
-		new_value[new_value_i] = value[i];
-		new_value_i += 1;
-	}
+	char *new_value = malloc(sizeof(char)*(new_length+1));
+	memcpy(new_value, string->value, string->length);
+	memcpy(new_value+string->length, value, value_length);
 	new_value[new_length] = '\x00';
-	str_reset(string);
-	string->length = new_length;
-	string->value = new_value;
+	str_reset_with(string, new_length, new_value);
 }
 
 void str_add_char(str *string, char *value){
-	int length = char_len(value);
-	str_add_bin(string, value, length);
+	str_add_bin(string, value, strlen(value));
 }
 
 void str_add(str *string, str *src){
 	str_add_bin(string, src->value, src->length);
 }
 
-int str_replace_from(str *string, str *before, str *after, int from){
+byte str_replace_from(str *string, str *before, str *after, int from){
 	char_replace_result result;
 	result = char_replace_from(
 		string->value, string->length,
 		before->value, before->length,
 		after->value, after->length, from);
-	if (result.count > 0){
-		str_reset(string);
-		string->length = result.new_length;
-		string->value = result.new_value;
+	if (result.replaced > 0){
+		str_reset_with(string, result.new_length, result.new_value);
 	}
-	return result.count;
+	return result.replaced;
 }
 
-int str_replace_char_from(str *string,
+byte str_replace_char_from(str *string,
 	char *before_value, char *after_value, int from){
-	str *before = new_str_p(before_value);
-	str *after = new_str_p(after_value);
-	int result_replace;
-	result_replace = str_replace_from(string, before, after, from);
-	str_reset(before);
-	str_reset(after);
-	free(before);
-	free(after);
-	before = NULL;
-	after = NULL;
+	str before = new_str(before_value);
+	str after = new_str(after_value);
+	byte result_replace = str_replace_from(string, &before, &after, from);
+	str_reset(&before);
+	str_reset(&after);
 	return result_replace;
 }
 
-int str_replace_once(str *string, str *before, str *after){
+byte str_replace_once(str *string, str *before, str *after){
 	return str_replace_from(string, before, after, 0);
 }
 
-int str_replace_char_once(str *string,
+byte str_replace_char_once(str *string,
 	char *before_value, char *after_value){
 	return str_replace_char_from(string, before_value, after_value, 0);
 }
@@ -128,14 +113,10 @@ int str_replace(str *string, str *before, str *after){
 			string->value, string->length,
 			before->value, before->length,
 			after->value, after->length, from);
-		if (result.count > 0){
-			//printf("free %p\n", string->value);
-			str_reset(string);
-			string->length = result.new_length;
-			string->value = result.new_value;
-			//printf("new %p from %p\n", string->value, result.new_value);
+		if (result.replaced){
+			str_reset_with(string, result.new_length, result.new_value);
 			from = result.index+after->length;
-			count += result.count;
+			count += 1;
 		}
 		else{
 			break;
@@ -146,50 +127,44 @@ int str_replace(str *string, str *before, str *after){
 
 int str_replace_char(str *string,
 	char *before_value, char *after_value){
-	str *before = new_str_p(before_value);
-	str *after = new_str_p(after_value);
-	int result_replace;
-	result_replace = str_replace(string, before, after);
+	str before = new_str(before_value);
+	str after = new_str(after_value);
+	int result_replace = str_replace(string, &before, &after);
 	/*printf("str_replace_char before: %s\n", before->value);
 	printf("str_replace_char after: %s\n", after->value);
 	printf("str_replace_char string: %s\n", string->value);*/
-	str_reset(before);
-	str_reset(after);
-	free(before);
-	free(after);
-	before = NULL;
-	after = NULL;
+	str_reset(&before);
+	str_reset(&after);
 	return result_replace;
 }
 
-int str_mid(str *string, int start, int end){
+byte str_mid(str *string, int start, int end){
+	//return error
 	if (end > string->length){
 		end = string->length;
 	}
 	if (start < 0){
 		fprintf(stderr, "[error] str_mid: start [%d] < 0\n", start);
-		return 0;
+		return -1;
 	}
 	else if (end < 0){
 		fprintf(stderr, "[error] str_mid: end [%d] < 0\n", end);
-		return 0;
+		return -2;
 	}
 	else if (end < start){
 		fprintf(stderr, "[error] str_mid: end [%d] < start [%d]\n", end, start);
-		return 0;
+		return -3;
 	}
 	if (start == 0 && end == string->length){
-		return 0;
+		return -4;
 	}
 	int new_length = end-start;
-	char *new_value = (char*) malloc(sizeof(char)*(new_length+1));
+	char *new_value = malloc(sizeof(char)*(new_length+1));
 	//char_clear(new_value, new_length+1, '\x00');
-	char_copy_range(string->value, start, new_value, 0, new_length);
+	memcpy(new_value, string->value+start, new_length);
 	new_value[new_length] = '\x00';
-	str_reset(string);
-	string->length = new_length;
-	string->value = new_value;
-	return 1;
+	str_reset_with(string, new_length, new_value);
+	return 0;
 }
 
 void str_strip(str *string){
@@ -217,7 +192,7 @@ void str_strip(str *string){
 	str_mid(string, new_start, new_end);
 }
 
-int str_equal(str *string_x, str *string_y){
+byte str_equal(str *string_x, str *string_y){
 	//return bool
 	int i;
 	if (string_x->length != string_y->length){
@@ -231,7 +206,7 @@ int str_equal(str *string_x, str *string_y){
 	return 1;
 }
 
-int str_equal_bin(str *string_x, char *value, int value_length){
+byte str_equal_bin(str *string_x, char *value, int value_length){
 	//return bool
 	int i;
 	if (string_x->length != value_length){
@@ -245,10 +220,10 @@ int str_equal_bin(str *string_x, char *value, int value_length){
 	return 1;
 }
 
-int str_equal_char(str *string_x, char *value){
+byte str_equal_char(str *string_x, char *value){
+	//return bool
 	int i;
-	int length = char_len(value);
-	if (string_x->length != length){
+	if (string_x->length != strlen(value)){
 		return 0;
 	}
 	for (i=0; i<string_x->length; i++){
@@ -264,10 +239,12 @@ void print_bin(char *value, int value_length){
 	char j;
 	char k;
 	char l;
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] print_bin: value == NULL\n");
 		return;
 	}
+	#endif
 	for (i=0; i<value_length; i++){
 		j = value[i];
 		if (j >= 32 && j < 127){
@@ -320,7 +297,7 @@ str new_str(char *value){
 }
 
 str *new_str_p(char *value){
-	str *string = (str*) malloc(sizeof(str));
+	str *string = malloc(sizeof(str));
 	string->length = 0;
 	string->value = NULL;
 	if (value != NULL){

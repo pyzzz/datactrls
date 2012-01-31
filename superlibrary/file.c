@@ -28,7 +28,7 @@ void file_reset(file *io){
 	io->mode_bin = 0;
 }
 
-int is_file(char *path){
+byte is_file(char *path){
 	//return bool
 	FILE *fp = NULL;
 	fp = fopen(path, "r");
@@ -40,7 +40,7 @@ int is_file(char *path){
 	return 1;
 }
 
-int is_dir(char *path){
+byte is_dir(char *path){
 	//return bool
 	DIR *dir = NULL;
 	dir = opendir(path);
@@ -65,9 +65,9 @@ long file_get_size(char *path){
 	return size;
 }
 
-int file_remove(char *path){
+byte file_remove(char *path){
 	//return error
-	int error = remove(path);
+	byte error = remove(path);
 	if (error != 0){
 		fprintf(stderr, "[error] file_remove: remove failed, error id [%d]\n",
 			error);
@@ -75,7 +75,7 @@ int file_remove(char *path){
 	return error;
 }
 
-int file_close(file *io){
+byte file_close(file *io){
 	//return error
 	if (io->fp == NULL){
 		fprintf(stderr, "[error] file_close: io->fp == NULL\n");
@@ -90,13 +90,15 @@ int file_close(file *io){
 	return 0;
 }
 
-int file_open(file *io, char *path, char *mode){
+byte file_open(file *io, char *path, char *mode){
 	//return error
 	int i;
+	#if NULL_ARG_CHECK
 	if (mode == NULL){
 		fprintf(stderr, "[error] file_open: mode == NULL\n");
 		return -1;
 	}
+	#endif
 	if (io->fp != NULL){
 		file_close(io);
 	}
@@ -133,16 +135,18 @@ int file_open(file *io, char *path, char *mode){
 	return 0;
 }
 
-int file_write_bin(file *io, char *value, int value_length){
+byte file_write_bin(file *io, char *value, int value_length){
 	//return error
 	if (io->fp == NULL){
 		fprintf(stderr, "[error] file_write_bin: io->fp == NULL\n");
 		return -1;
 	}
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] file_write_bin: value == NULL\n");
 		return -2;
 	}
+	#endif
 	if (io->mode_write != 1 && io->mode_add != 1){
 		fprintf(stderr, "[error] file_write_bin: file not open for write\n");
 		return -3;
@@ -159,12 +163,11 @@ int file_write_bin(file *io, char *value, int value_length){
 	return 1;
 }
 
-int file_write_char(file *io, char *value){
-	int value_length = char_len(value);
-	return file_write_bin(io, value, value_length);
+byte file_write_char(file *io, char *value){
+	return file_write_bin(io, value, strlen(value));
 }
 
-int file_write_str(file *io, str *string){
+byte file_write_str(file *io, str *string){
 	return file_write_bin(io, string->value, string->length);
 }
 
@@ -182,7 +185,7 @@ char *file_read_char(file *io, int size){
 	if (size == -1 || size > size_max){
 		size = size_max;
 	}
-	char *value = (char*) malloc(sizeof(char)*(size+1));
+	char *value = malloc(sizeof(char)*(size+1));
 	for (i=0; i<size; i++){
 		value[i] = fgetc(io->fp);
 	}
@@ -209,7 +212,7 @@ void file_read_str(file *io, str *string, int size){
 	}
 	//printf("%ld %ld %d\n", io->size, ftell(io->fp), size_max);
 	int length = -1;
-	char *value = (char*) malloc(sizeof(char)*(size+1));
+	char *value = malloc(sizeof(char)*(size+1));
 	for (i=0; i<size; i++){
 		value[i] = fgetc(io->fp);
 	}

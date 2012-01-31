@@ -24,7 +24,7 @@ struct list{
 typedef struct list list;
 
 list_data *new_list_data_p(){
-	list_data *data = (list_data*) malloc(sizeof(list_data));
+	list_data *data = malloc(sizeof(list_data));
 	data->num = -1;
 	data->string = NULL;
 	data->type = DATA_TYPE_NULL;
@@ -49,10 +49,12 @@ void list_data_set_str(list_data *data, str *string){
 }
 
 void list_data_set_bin(list_data *data, char *value, int value_length){
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] list_data_set_bin: value == NULL\n");
 		return;
 	}
+	#endif
 	str_reset(data->string);
 	free(data->string);
 	data->string = NULL;
@@ -100,7 +102,7 @@ void list_insert(list *l, list_data *data, int index){
 		fprintf(stderr, "[error] list_insert: index < 0 [%d]\n", index);
 		return;
 	}
-	m = (list_child*) malloc(sizeof(list_child));
+	m = malloc(sizeof(list_child));
 	m->data = data;
 	if (l->length == 0){
 		//if not list
@@ -228,10 +230,12 @@ int list_find_char(list *l, char *value){
 }
 
 void list_remove_child(list *l, list_child *m){
+	#if NULL_ARG_CHECK
 	if (m == NULL){
 		fprintf(stderr, "[error] list_remove_child: m == NULL\n");
 		return;
 	}
+	#endif
 	/*byte in_list = 0;
 	list_child *n = NULL;
 	n = l->start;
@@ -272,11 +276,13 @@ void list_remove_child(list *l, list_child *m){
 
 int list_remove(list *l, int index){
 	//remove from index, return bool
+	#if NULL_ARG_CHECK
 	if (index < 0){
 		fprintf(stderr, "[error] list_remove: index < 0 [%d]\n", index);
 		return 0;
 	}
-	else if (index >= l->length){
+	#endif
+	if (index >= l->length){
 		fprintf(stderr, "[error] list_remove: index out of range [%d]\n", index);
 		return 0;
 	}
@@ -290,7 +296,7 @@ int list_remove(list *l, int index){
 	return 1;
 }
 
-int list_remove_int(list *l, int num){
+byte list_remove_int(list *l, int num){
 	//return bool
 	list_child *m = NULL;
 	m = l->start;
@@ -308,7 +314,7 @@ int list_remove_int(list *l, int num){
 	return 0;
 }
 
-int list_remove_str(list *l, str *string){
+byte list_remove_str(list *l, str *string){
 	//return bool
 	list_child *m = NULL;
 	m = l->start;
@@ -329,7 +335,7 @@ int list_remove_str(list *l, str *string){
 	return 0;
 }
 
-int list_remove_char(list *l, char *value){
+byte list_remove_char(list *l, char *value){
 	//return bool
 	list_child *m = NULL;
 	m = l->start;
@@ -493,7 +499,7 @@ str *list_get_str_p(list *l, int index){
 char *list_get_char(list *l, int index){
 	//return char*
 	list_data *data = NULL;
-	char *result = (char*) malloc(sizeof(char)*1);
+	char *result = malloc(sizeof(char)*1);
 	result[0] = '\x00';
 	data = list_get(l, index);
 	if (data == NULL){
@@ -560,6 +566,7 @@ list new_list_from_range(int start, int end){
 list new_list_from_split_bin(char *value, int value_length,
 	char *split_key, byte skip_space){
 	list l = new_list();
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] new_list_from_split_bin: value == NULL\n");
 		return l;
@@ -568,9 +575,10 @@ list new_list_from_split_bin(char *value, int value_length,
 		fprintf(stderr, "[error] new_list_from_split_bin: split_key == NULL\n");
 		return l;
 	}
+	#endif
 	str *string = new_str_p(NULL);
-	int split_key_length = char_len(split_key);
-	char *word = (char*) malloc(sizeof(char)*(value_length+1));
+	int split_key_length = strlen(split_key);
+	char *word = malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
 	int split_key_i = 0;
@@ -630,22 +638,22 @@ list new_list_from_split_str_skip_space(str *string, char *split_key){
 }
 
 list new_list_from_split_char(char *value, char *split_key){
-	int value_length = char_len(value);
-	return new_list_from_split_bin(value, value_length, split_key, 0);
+	return new_list_from_split_bin(value, strlen(value), split_key, 0);
 }
 
 list new_list_from_split_char_skip_space(char *value, char *split_key){
-	int value_length = char_len(value);
-	return new_list_from_split_bin(value, value_length, split_key, 1);
+	return new_list_from_split_bin(value, strlen(value), split_key, 1);
 }
 
 list new_list_from_split_bin_space(char *value, int value_length){
 	list l = new_list();
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] new_list_from_split_bin_space: value == NULL\n");
 		return l;
 	}
-	char *word = (char*) malloc(sizeof(char)*(value_length+1));
+	#endif
+	char *word = malloc(sizeof(char)*(value_length+1));
 	int i;
 	int word_i = 0;
 	char j;
@@ -678,6 +686,5 @@ list new_list_from_split_str_space(str *string){
 }
 
 list new_list_from_split_char_space(char *value){
-	int value_length = char_len(value);
-	return new_list_from_split_bin_space(value, value_length);
+	return new_list_from_split_bin_space(value, strlen(value));
 }

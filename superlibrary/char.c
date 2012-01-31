@@ -1,17 +1,19 @@
 struct char_replace_result{
 	int index;
-	int count;
 	int new_length;
 	char *new_value;
+	byte replaced;
 };
 typedef struct char_replace_result char_replace_result;
 
-int char_len(char *value){
+/*int char_len(char *value){
 	int length = 0;
+	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "char_len error: value == NULL\n");
 		return length;
 	}
+	#endif
 	while (1){
 		if (value[length] != '\x00'){
 			length++;
@@ -22,6 +24,7 @@ int char_len(char *value){
 	}
 	return length;
 }
+[2012-01-31] strlen instead of this*/
 
 int char_find_from(char* value, int value_length,
 	char* key, int key_length, int from){
@@ -60,25 +63,26 @@ int char_find(char* value, int value_length, char* key, int key_length){
 	return char_find_from(value, value_length, key, key_length, 0);
 }
 
-//void char_clear(char *value, int value_length, char num){
-//	int i;
-//	for (i=0; i<value_length; i++){
-//		value[i] = num;
-//	}
-//}
+void char_clear(char *value, int value_length, char num){
+	int i;
+	for (i=0; i<value_length; i++){
+		value[i] = num;
+	}
+}
 
-void char_copy_range(char *src, int src_from, char *dst, int dst_from, int length){
+/*void char_copy_range(char *src, int src_from, char *dst, int dst_from, int length){
 	//fprintf(stderr, "char_copy_range: %d %s\n", length, src);
 	int i;
 	for (i=0; i<length; i++){
 		dst[i+dst_from] = src[i+src_from];
 	}
 }
+[2012-01-31] memcpy instead of this*/
 
 char *char_copy(char *src, int src_length){
 	int i;
 	char *dst;
-	dst = (char*) malloc(sizeof(char)*(src_length+1));
+	dst = malloc(sizeof(char)*(src_length+1));
 	for (i=0; i<src_length; i++){
 		dst[i] = src[i];
 	}
@@ -90,52 +94,41 @@ char_replace_result char_replace_from(char* value, int value_length,
 	char* before, int before_length, char* after, int after_length, int from){
 	int before_index;
 	char_replace_result result;
+	#if NULL_ARG_CHECK
 	if (value == NULL){
-		fprintf(stderr, "char_replace_from error: value == NULL\n");
+		fprintf(stderr, "[error] char_replace_from: value == NULL\n");
 		result.index = -1;
-		result.count = 0;
+		result.replaced = 0;
 		return result;
 	}
 	if (before == NULL){
-		fprintf(stderr, "char_replace_from error: before == NULL\n");
+		fprintf(stderr, "[error] char_replace_from: before == NULL\n");
 		result.index = -1;
-		result.count = 0;
+		result.replaced = 0;
 		return result;
 	}
 	if (after == NULL){
-		fprintf(stderr, "char_replace_from error: after == NULL\n");
+		fprintf(stderr, "[error] char_replace_from: after == NULL\n");
 		result.index = -1;
-		result.count = 0;
+		result.replaced = 0;
 		return result;
 	}
+	#endif
 	before_index = char_find_from(value, value_length, before, before_length, from);
 	if (before_index == -1){
 		result.index = before_index;
-		result.count = 0;
+		result.replaced = 0;
 		return result;
 	}
 	result.index = before_index;
-	result.count = 1;
+	result.replaced = 1;
 	result.new_length = value_length+after_length-before_length;
-	result.new_value = (char*) malloc(sizeof(char)*(result.new_length+1));
-	//char_clear(result.new_value, result.new_length+1, '\x00');
-	/*fprintf(stderr, "value: %s\n", value);
-	fprintf(stderr, "from: %d\n", from);
-	fprintf(stderr, "value_length: %d\n", value_length);
-	fprintf(stderr, "before_index: %d\n", before_index);
-	fprintf(stderr, "before_length: %d\n", before_length);
-	fprintf(stderr, "new_length: %d\n", result.new_length);
-	fprintf(stderr, "result.new_value: %s\n", result.new_value);*/
-	//example: "abcde".replace("c", "123")
-	char_copy_range(value, 0, result.new_value, 0, before_index); //"ab"
-	//fprintf(stderr, "result.new_value: %s\n", result.new_value);
-	char_copy_range(after, 0, result.new_value, before_index, after_length); //"123"
-	//fprintf(stderr, "result.new_value: %s\n", result.new_value);
-	char_copy_range(value, before_index+before_length,
-		result.new_value, before_index+after_length,
+	result.new_value = malloc(sizeof(char)*(result.new_length+1));
+	memcpy(result.new_value, value, before_index); //"ab"
+	memcpy(result.new_value+before_index, after, after_length); //"123"
+	memcpy(result.new_value+before_index+after_length,
+		value+before_index+before_length,
 		value_length-before_index-before_length); //"de"
 	result.new_value[result.new_length] = '\x00';
-	//fprintf(stderr, "result.new_value: %s\n", result.new_value);
-	//fprintf(stderr, "replace end\n\n");
 	return result;
 }
