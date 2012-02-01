@@ -22,7 +22,7 @@ void test_dictree(){
 	printf("test dictree get...\n");
 	for (i=0; i<MAX_RANGE; i++){
 		str_set_int(&string, i);
-		dictree_set_str_from_str(&string, &dict, &string);
+		str_set_dictree_get_str(&string, &dict, &string);
 	}
 	printf("%.2lfs\n", ((double)clock()-start)/CLOCKS_PER_SEC);
 	start = clock();

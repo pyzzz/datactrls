@@ -98,8 +98,8 @@ void test_list(){
 	int num_get = 1;
 	int num_get_r = 7;
 	int num_find = 5;
-	int result_get = list_get_int(&l, num_get);
-	int result_get_r = list_get_int(&l, num_get_r);
+	int result_get = new_int_from_list_get(&l, num_get);
+	int result_get_r = new_int_from_list_get(&l, num_get_r);
 	int result_find = list_find_int(&l, num_find);
 	printf("list get %d: %d\n", num_get, result_get);
 	printf("list get %d: %d\n", num_get_r, result_get_r);
@@ -125,7 +125,7 @@ void test_str_list(){
 	list_insert_int(&l, 100, 3);
 	print_list(&l);
 	int num_get = 0;
-	str result_get = list_get_str(&l, num_get);
+	str result_get = new_str_from_list_get(&l, num_get);
 	int result_find = list_find_char(&l, "100");
 	printf("list get %d: %s\n", num_get, result_get.value);
 	printf("list find %s: %d\n", "100", result_find);
@@ -238,7 +238,7 @@ void test_dictree(){
 	dictree_cleanup(&dict);
 	printf("dictree node count %d\n", dictree_node_count(&dict));
 	print_dictree(&dict);
-	str string = dictree_get_str_from_char(&dict, "abcd");
+	str string = new_str_from_dictree_get_char(&dict, "abcd");
 	print_str_preview(&string);
 	dictree_reset(&dict);
 	print_dictree(&dict);

@@ -184,25 +184,43 @@ dict_node *dictree_get_dict_node(dictree *dict, char *key, int key_value){
 	return node;
 }
 
-str dictree_get_str_from_bin(dictree *dict, char *key, int key_value){
+str new_str_from_dictree_get_bin(dictree *dict, char *key, int key_value){
 	str string = new_str(NULL);
 	dict_node *node = dictree_get_dict_node(dict, key, key_value);
 	if (node != NULL && node->key != NULL && node->value != NULL
-		&& str_equal_bin(node->key, key, key_value)){
+		/*&& str_equal_bin(node->key, key, key_value)*/){
 		str_set_bin(&string, node->value->value, node->value->length);
 	}
 	return string;
 }
 
-str dictree_get_str_from_char(dictree *dict, char *key){
-	return dictree_get_str_from_bin(dict, key, strlen(key));
+str new_str_from_dictree_get_char(dictree *dict, char *key){
+	return new_str_from_dictree_get_bin(dict, key, strlen(key));
 }
 
-str dictree_get_str_from_str(dictree *dict, str *key){
-	return dictree_get_str_from_bin(dict, key->value, key->length);
+str new_str_from_dictree_get_str(dictree *dict, str *key){
+	return new_str_from_dictree_get_bin(dict, key->value, key->length);
 }
 
-void dictree_set_str_from_bin(str *string, dictree *dict, char *key, int key_value){
+str *new_str_p_from_dictree_get_bin(dictree *dict, char *key, int key_value){
+	str *string = new_str_p(NULL);
+	dict_node *node = dictree_get_dict_node(dict, key, key_value);
+	if (node != NULL && node->key != NULL && node->value != NULL
+		/*&& str_equal_bin(node->key, key, key_value)*/){
+		str_set_bin(string, node->value->value, node->value->length);
+	}
+	return string;
+}
+
+str *new_str_p_from_dictree_get_char(dictree *dict, char *key){
+	return new_str_p_from_dictree_get_bin(dict, key, strlen(key));
+}
+
+str *new_str_p_from_dictree_get_str(dictree *dict, str *key){
+	return new_str_p_from_dictree_get_bin(dict, key->value, key->length);
+}
+
+void str_set_dictree_get_bin(str *string, dictree *dict, char *key, int key_value){
 	dict_node *node = dictree_get_dict_node(dict, key, key_value);
 	if (node != NULL && node->key != NULL && node->value != NULL
 		&& str_equal_bin(node->key, key, key_value)){
@@ -210,12 +228,12 @@ void dictree_set_str_from_bin(str *string, dictree *dict, char *key, int key_val
 	}
 }
 
-void dictree_set_str_from_char(str *string, dictree *dict, char *key){
-	return dictree_set_str_from_bin(string, dict, key, strlen(key));
+void str_set_dictree_get_char(str *string, dictree *dict, char *key){
+	return str_set_dictree_get_bin(string, dict, key, strlen(key));
 }
 
-void dictree_set_str_from_str(str *string, dictree *dict, str *key){
-	return dictree_set_str_from_bin(string, dict, key->value, key->length);
+void str_set_dictree_get_str(str *string, dictree *dict, str *key){
+	return str_set_dictree_get_bin(string, dict, key->value, key->length);
 }
 
 byte dictree_remove_from_bin(dictree *dict, char *key, int key_length){

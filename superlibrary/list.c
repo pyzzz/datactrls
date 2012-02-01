@@ -447,7 +447,7 @@ list_data *list_get(list *l, int index){
 	return m->data;
 }
 
-int list_get_int(list *l, int index){
+int new_int_from_list_get(list *l, int index){
 	//return num
 	list_data *data = NULL;
 	data = list_get(l, index);
@@ -462,7 +462,7 @@ int list_get_int(list *l, int index){
 	return data->num;
 }
 
-str list_get_str(list *l, int index){
+str new_str_from_list_get(list *l, int index){
 	list_data *data = NULL;
 	str result = new_str(NULL);
 	data = list_get(l, index);
@@ -470,7 +470,8 @@ str list_get_str(list *l, int index){
 		return result;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_str: data type not str [index:%d]\n",
+		fprintf(stderr,
+			"[error] new_str_from_list_get: data type not str [index:%d]\n",
 			index);
 		return result;
 	}
@@ -478,7 +479,7 @@ str list_get_str(list *l, int index){
 	return result;
 }
 
-str *list_get_str_p(list *l, int index){
+str *new_str_p_from_list_get(list *l, int index){
 	list_data *data = NULL;
 	str *result = new_str_p(NULL);
 	data = list_get(l, index);
@@ -486,7 +487,8 @@ str *list_get_str_p(list *l, int index){
 		return result;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_str_p: data type not str [index:%d]\n",
+		fprintf(stderr,
+			"[error] new_str_p_from_list_get: data type not str [index:%d]\n",
 			index);
 		return result;
 	}
@@ -494,21 +496,22 @@ str *list_get_str_p(list *l, int index){
 	return result;
 }
 
-void list_set_str(str *string, list *l, int index){
+void str_set_list_get(str *string, list *l, int index){
 	list_data *data = NULL;
 	data = list_get(l, index);
 	if (data == NULL){
 		return;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_str_p: data type not str [index:%d]\n",
+		fprintf(stderr,
+			"[error] str_set_list_get: data type not str [index:%d]\n",
 			index);
 		return;
 	}
 	str_set_bin(string, data->string->value, data->string->length);
 }
 
-char *list_get_char(list *l, int index){
+char *new_char_from_list_get(list *l, int index){
 	//return char*
 	list_data *data = NULL;
 	char *result = malloc(sizeof(char)*1);
