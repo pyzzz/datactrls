@@ -463,7 +463,6 @@ int list_get_int(list *l, int index){
 }
 
 str list_get_str(list *l, int index){
-	//return str*
 	list_data *data = NULL;
 	str result = new_str(NULL);
 	data = list_get(l, index);
@@ -480,7 +479,6 @@ str list_get_str(list *l, int index){
 }
 
 str *list_get_str_p(list *l, int index){
-	//return str*
 	list_data *data = NULL;
 	str *result = new_str_p(NULL);
 	data = list_get(l, index);
@@ -494,6 +492,20 @@ str *list_get_str_p(list *l, int index){
 	}
 	str_set_bin(result, data->string->value, data->string->length);
 	return result;
+}
+
+void list_set_str(str *string, list *l, int index){
+	list_data *data = NULL;
+	data = list_get(l, index);
+	if (data == NULL){
+		return;
+	}
+	else if (data->type != DATA_TYPE_STR){
+		fprintf(stderr, "[error] list_get_str_p: data type not str [index:%d]\n",
+			index);
+		return;
+	}
+	str_set_bin(string, data->string->value, data->string->length);
 }
 
 char *list_get_char(list *l, int index){

@@ -1,4 +1,4 @@
-#define NULL_ARG_CHECK 1
+#define NULL_ARG_CHECK 0
 #define CHAR_FROM_INT_BUF 50
 typedef char byte;
 

@@ -36,31 +36,29 @@ dictree *new_dictree_p(){
 }
 
 dict_node *dict_node_get(register dict_node *node, register char symbol){
-	if (symbol == node->symbol){
-		return node;
+	while (node){
+		if (symbol == node->symbol){
+			return node;
+		}
+		node = node->next;
 	}
-	else if (node->next != NULL){
-		return dict_node_get(node->next, symbol);
-	}
-	else{
-		return NULL;
-	}
+	return NULL;
 }
 
 dict_node *dict_node_get_last(register dict_node *node){
-	if (node->next != NULL){
-		return dict_node_get_last(node->next);
+	if (node == NULL){
+		return NULL;
 	}
-	else{
-		return node;
+	while (node->next){
+		node = node->next;
 	}
+	return node;
 }
 
 void dict_node_reset(register dict_node *node){
 	if (node == NULL){
 		return;
 	}
-	node->symbol = '\x00';
 	if (node->next != NULL){
 		dict_node_reset(node->next);
 		free(node->next);
@@ -85,6 +83,7 @@ void dict_node_reset(register dict_node *node){
 
 void dictree_reset(dictree *dict){
 	dict_node_reset(dict->root);
+	dict->root->symbol = '\x00';
 }
 
 void dictree_destroy(dictree *dict){
@@ -203,6 +202,22 @@ str dictree_get_str_from_str(dictree *dict, str *key){
 	return dictree_get_str_from_bin(dict, key->value, key->length);
 }
 
+void dictree_set_str_from_bin(str *string, dictree *dict, char *key, int key_value){
+	dict_node *node = dictree_get_dict_node(dict, key, key_value);
+	if (node != NULL && node->key != NULL && node->value != NULL
+		&& str_equal_bin(node->key, key, key_value)){
+		str_set_bin(string, node->value->value, node->value->length);
+	}
+}
+
+void dictree_set_str_from_char(str *string, dictree *dict, char *key){
+	return dictree_set_str_from_bin(string, dict, key, strlen(key));
+}
+
+void dictree_set_str_from_str(str *string, dictree *dict, str *key){
+	return dictree_set_str_from_bin(string, dict, key->value, key->length);
+}
+
 byte dictree_remove_from_bin(dictree *dict, char *key, int key_length){
 	//return error
 	dict_node *node = dictree_get_dict_node(dict, key, key_length);
@@ -271,6 +286,59 @@ void print_dictree(dictree *dict){
 	print_dict_node(dict->root);
 	printf("}");
 	printf("\n");
+}
+
+void dict_node_count(dict_node *node, int *count){
+	*count += 1;
+	if (node->next != NULL){
+		dict_node_count(node->next, count);
+	}
+	if (node->child != NULL){
+		dict_node_count(node->child, count);
+	}
+}
+
+int dictree_node_count(dictree *dict){
+	int count = 0;
+	dict_node_count(dict->root, &count);
+	return count;
+}
+
+void dict_node_clean(dict_node *node){
+	register dict_node *tmp;
+	if (node->next != NULL){
+		dict_node_clean(node->next);
+	}
+	if (node->child != NULL){
+		dict_node_clean(node->child);
+	}
+	if (node->next != NULL && node->next->child == NULL
+		&& node->next->key == NULL && node->next->value == NULL){
+		tmp = node->next;
+		node->next = node->next->next;
+		free(tmp);
+	}
+	if (node->child != NULL && node->child->child == NULL
+		&& node->child->key == NULL && node->child->value == NULL){
+		tmp = node->child;
+		node->child = node->child->next;
+		free(tmp);
+	}
+}
+
+void dictree_cleanup(dictree *dict){
+	//need clean up because key remove not cleanly
+	#if NULL_ARG_CHECK
+	if (dict == NULL){
+		fprintf(stderr, "[error] dictree_clean: dict == NULL\n");
+		return;
+	}
+	if (dict->root == NULL){
+		fprintf(stderr, "[error] dictree_clean: dict->root == NULL\n");
+		return;
+	}
+	#endif
+	dict_node_clean(dict->root);
 }
 
 void dict_node_extend(dict_node *node, dictree *dst){

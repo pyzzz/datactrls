@@ -1,4 +1,4 @@
-Library work on C for string and list(chain) handling.
+general library work on c, support string, file, list, dict ...
 
 sample:
 str string = new_str("test replace abcabcabc");
@@ -17,3 +17,9 @@ file io = new_file();
 file_open(&io, "abc.txt", "wb");
 file_write_char(&io, "abc\xff\x10");
 file_close(&io);
+
+str string = new_str_from_bin("0:\x00, 1:\x01, n:\n", 13);
+dictree dict = new_dictree_from_format_str_skip_space(&string, ':', ',');
+print_dictree(&dict);
+dictree_remove_from_char(&dict, "n");
+dictree_cleanup(&dict);

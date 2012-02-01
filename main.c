@@ -3,7 +3,7 @@
 gcc -Wall -Wformat-security -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
-[2012-01-30] total heap usage: 341 allocs, 341 frees, 7,418 bytes allocated*/
+[2012-02-01] total heap usage: 330 allocs, 330 frees, 7,250 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -234,6 +234,9 @@ void test_dictree(){
 	dictree_set_char(&dict, "_bcd", "0");
 	print_dictree(&dict);
 	dictree_remove_from_char(&dict, "_bcd");
+	printf("dictree node count %d\n", dictree_node_count(&dict));
+	dictree_cleanup(&dict);
+	printf("dictree node count %d\n", dictree_node_count(&dict));
 	print_dictree(&dict);
 	str string = dictree_get_str_from_char(&dict, "abcd");
 	print_str_preview(&string);
