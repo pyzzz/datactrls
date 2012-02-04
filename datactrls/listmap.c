@@ -270,7 +270,7 @@ byte listmap_remove_int(listmap *l, int num){
 		listmap_remove(l, index);
 		return 1;
 	}
-	fprintf(stderr, "[error] listmap_remove_int: int not in list [%d]\n", num);
+	//fprintf(stderr, "[error] listmap_remove_int: int not in list [%d]\n", num);
 	return 0;
 }
 
@@ -281,8 +281,8 @@ byte listmap_remove_str(listmap *l, str *string){
 		listmap_remove(l, index);
 		return 1;
 	}
-	fprintf(stderr, "[error] list_remove_str: str not in list [%s]\n",
-		string->value);
+	/*fprintf(stderr, "[error] list_remove_str: str not in list [%s]\n",
+		string->value);*/
 	return 0;
 }
 
@@ -293,8 +293,8 @@ byte listmap_remove_char(listmap *l, char *value){
 		listmap_remove(l, index);
 		return 1;
 	}
-	fprintf(stderr, "[error] listmap_remove_char: char not in list [\"%s\"]\n",
-		value);
+	/*fprintf(stderr, "[error] listmap_remove_char: char not in list [\"%s\"]\n",
+		value);*/
 	return 0;
 }
 
@@ -454,4 +454,217 @@ void print_listmap(listmap *l){
 		}
 	}
 	printf("]\n");
+}
+
+void listmap_append_split_bin(listmap *l, char *value, int value_length,
+	char *split_key, byte skip_space){
+	#if NULL_ARG_CHECK
+	if (value == NULL){
+		fprintf(stderr, "[error] listmap_append_split_bin: value == NULL\n");
+		return;
+	}
+	if (split_key == NULL){
+		fprintf(stderr, "[error] listmap_append_split_bin: split_key == NULL\n");
+		return;
+	}
+	#endif
+	str *string = new_str_p(NULL);
+	int split_key_length = strlen(split_key);
+	char *word = malloc(sizeof(char)*(value_length+1));
+	int i;
+	int word_i = 0;
+	int split_key_i = 0;
+	char j;
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		//if ((skip_space != 0) && (j == ' ' || j == '\t')){
+		//	continue;
+		//}
+		word[word_i] = j;
+		//word[word_i+1] = '\x00';
+		word_i += 1;
+		if (j == split_key[split_key_i]){
+			split_key_i += 1;
+		}
+		else{
+			split_key_i = 0;
+		}
+		if (split_key[split_key_i] == '\x00'){
+			if (skip_space != 0){
+				str_set_bin(string, word, word_i-split_key_length);
+				str_strip(string);
+				listmap_append_str(l, string);
+			}
+			else{
+				listmap_append_bin(l, word, word_i-split_key_length);
+			}
+			word_i = 0;
+			split_key_i = 0;
+			word[0] = '\x00';
+		}
+		//printf("j %c split_key[split_key_i] %c split_key_i %d\n",
+		//	j, split_key[split_key_i], split_key_i);
+	}
+	if (skip_space != 0){
+		str_set_bin(string, word, word_i);
+		str_strip(string);
+		listmap_append_str(l, string);
+	}
+	else{
+		listmap_append_bin(l, word, word_i);
+	}
+	str_reset(string);
+	free(word);
+	free(string);
+	word = NULL;
+	string = NULL;
+}
+
+void listmap_append_split_str(listmap *l, str *string, char *split_key){
+	listmap_append_split_bin(l, string->value, string->length, split_key, 0);
+}
+
+void listmap_append_split_str_skip_space(listmap *l, str *string, char *split_key){
+	listmap_append_split_bin(l, string->value, string->length, split_key, 1);
+}
+
+void listmap_append_split_char(listmap *l, char *value, char *split_key){
+	listmap_append_split_bin(l, value, strlen(value), split_key, 0);
+}
+
+void listmap_append_split_char_skip_space(listmap *l, char *value, char *split_key){
+	listmap_append_split_bin(l, value, strlen(value), split_key, 1);
+}
+
+listmap new_listmap_from_split_bin(char *value, int value_length,
+	char *split_key, byte skip_space){
+	listmap l = new_listmap();
+	listmap_append_split_bin(&l, value, value_length, split_key, skip_space);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_bin(char *value, int value_length,
+	char *split_key, byte skip_space){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin(l, value, value_length, split_key, skip_space);
+	return l;
+}
+
+listmap new_listmap_from_split_str(str *string, char *split_key){
+	listmap l = new_listmap();
+	listmap_append_split_bin(&l, string->value, string->length, split_key, 0);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_str(str *string, char *split_key){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin(l, string->value, string->length, split_key, 0);
+	return l;
+}
+
+listmap new_listmap_from_split_str_skip_space(str *string, char *split_key){
+	listmap l = new_listmap();
+	listmap_append_split_bin(&l, string->value, string->length, split_key, 1);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_str_skip_space(str *string, char *split_key){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin(l, string->value, string->length, split_key, 1);
+	return l;
+}
+
+listmap new_listmap_from_split_char(char *value, char *split_key){
+	listmap l = new_listmap();
+	listmap_append_split_bin(&l, value, strlen(value), split_key, 0);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_char(char *value, char *split_key){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin(l, value, strlen(value), split_key, 0);
+	return l;
+}
+
+listmap new_listmap_from_split_char_skip_space(char *value, char *split_key){
+	listmap l = new_listmap();
+	listmap_append_split_bin(&l, value, strlen(value), split_key, 1);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_char_skip_space(char *value, char *split_key){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin(l, value, strlen(value), split_key, 1);
+	return l;
+}
+
+void listmap_append_split_bin_space(listmap *l, char *value, int value_length){
+	#if NULL_ARG_CHECK
+	if (value == NULL){
+		fprintf(stderr,
+			"[error] listmap_append_split_bin_space: value == NULL\n");
+		return;
+	}
+	#endif
+	char *word = malloc(sizeof(char)*(value_length+1));
+	int i;
+	int word_i = 0;
+	char j;
+	for (i=0; i<value_length; i++){
+		j = value[i];
+		if (j == ' ' || j == '\t' || j == '\x00'){
+			word[word_i] = '\x00';
+			if (word[0] != '\x00'){
+				listmap_append_bin(l, word, word_i);
+				word[0] = '\x00';
+			}
+			word_i = 0;
+		}
+		else{
+			word[word_i] = j;
+			word_i += 1;
+		}
+		//printf("j %d\n", j);
+	}
+	if (word[0] != '\x00'){
+		listmap_append_bin(l, word, word_i);
+	}
+	free(word);
+	word = NULL;
+}
+
+listmap new_listmap_from_split_bin_space(char *value, int value_length){
+	listmap l = new_listmap();
+	listmap_append_split_bin_space(&l, value, value_length);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_bin_space(char *value, int value_length){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin_space(l, value, value_length);
+	return l;
+}
+
+listmap new_listmap_from_split_str_space(str *string){
+	listmap l = new_listmap();
+	listmap_append_split_bin_space(&l, string->value, string->length);
+	return l;
+}
+
+listmap *new_listmap_p_from_split_str_space(str *string){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin_space(l, string->value, string->length);
+	return l;
+}
+
+listmap new_listmap_from_split_char_space(char *value){
+	listmap l = new_listmap();
+	listmap_append_split_bin_space(&l, value, strlen(value));
+	return l;
+}
+
+listmap *new_listmap_p_from_split_char_space(char *value){
+	listmap *l = new_listmap_p();
+	listmap_append_split_bin_space(l, value, strlen(value));
+	return l;
 }

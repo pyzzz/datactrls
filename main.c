@@ -304,6 +304,21 @@ void test_listmap(){
 	str_reset(&string);
 }
 
+void test_listmap_split(){
+	printf("---- test_listmap_split -----\n");
+	str row = new_str_from_bin("_123___ ___ ___ 0 	0___ \x00_1", 27);
+	listmap l = new_listmap_from_split_str_skip_space(&row, "___");
+	print_listmap(&l);
+	listmap_remove_all_char(&l, "");
+	print_listmap(&l);
+	listmap ls = new_listmap_from_split_bin_space("id name 	cost\x00.date", 20);
+	print_listmap(&ls);
+	printf("\n");
+	str_reset(&row);
+	listmap_reset(&l);
+	listmap_reset(&ls);
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -325,5 +340,6 @@ int main(int argc, char **argv){
 	test_format();
 	test_hash();
 	test_listmap();
+	test_listmap_split();
 	return 0;
 }

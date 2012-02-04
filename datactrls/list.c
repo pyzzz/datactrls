@@ -550,11 +550,11 @@ void list_append_split_bin(list *l, char *value, int value_length,
 	char *split_key, byte skip_space){
 	#if NULL_ARG_CHECK
 	if (value == NULL){
-		fprintf(stderr, "[error] new_list_from_split_bin: value == NULL\n");
+		fprintf(stderr, "[error] list_append_split_bin: value == NULL\n");
 		return;
 	}
 	if (split_key == NULL){
-		fprintf(stderr, "[error] new_list_from_split_bin: split_key == NULL\n");
+		fprintf(stderr, "[error] list_append_split_bin: split_key == NULL\n");
 		return;
 	}
 	#endif
@@ -691,7 +691,7 @@ list *new_list_p_from_split_char_skip_space(char *value, char *split_key){
 void list_append_split_bin_space(list *l, char *value, int value_length){
 	#if NULL_ARG_CHECK
 	if (value == NULL){
-		fprintf(stderr, "[error] new_list_from_split_bin_space: value == NULL\n");
+		fprintf(stderr, "[error] list_append_split_bin_space: value == NULL\n");
 		return;
 	}
 	#endif

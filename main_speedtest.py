@@ -31,16 +31,16 @@ def test_list():
 	#[2012-02-04] set 0.02s get 0.09s each 0.09s
 	start = time.time()
 	print "---- test_list -----"
-	print "test dict set (%d)...\t"%MAX_RANGE,
+	print "test list set (%d)...\t"%MAX_RANGE,
 	l = range(MAX_RANGE)
 	print "%.2fs"%(time.time()-start)
 	start = time.time()
-	print "test dict get (%d)...\t"%MAX_RANGE,
+	print "test list get (%d)...\t"%MAX_RANGE,
 	for i in xrange(MAX_RANGE):
 		l[i]
 	print "%.2fs"%(time.time()-start)
 	start = time.time()
-	print "test dict each (%d)...\t"%MAX_RANGE,
+	print "test list each (%d)...\t"%MAX_RANGE,
 	for i in l: i+=1 #no effect
 	print "%.2fs"%(time.time()-start)
 	print
