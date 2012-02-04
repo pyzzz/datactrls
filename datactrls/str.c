@@ -172,14 +172,15 @@ void str_strip(str *string){
 	int new_end = string->length;
 	int i;
 	char j;
-	for (i=0; i<string->length; i++){
+	int str_length = string->length;
+	for (i=0; i<str_length; i++){
 		j = string->value[i];
 		if (j != ' ' && j != '\t'){
 			break;
 		}
 		new_start += 1;
 	}
-	for (i=string->length-1; i>=0; i--){
+	for (i=str_length-1; i>=0; i--){
 		j = string->value[i];
 		if (j != ' ' && j != '\t'){
 			break;

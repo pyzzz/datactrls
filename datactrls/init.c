@@ -1,6 +1,6 @@
 #define NULL_ARG_CHECK 0
 #define CHAR_FROM_INT_BUF 50
-#define LISTMAP_MALLOC_POLL 10
+#define LISTMAP_POLL_SIZE 10
 typedef char byte;
 #include <stdio.h>
 #include <stdlib.h>

@@ -3,7 +3,7 @@
 gcc -Wall -Wformat-security -O3 -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
-[2012-02-04] total heap usage: 330 allocs, 330 frees, 7,250 bytes allocated*/
+[2012-02-04] total heap usage: 354 allocs, 354 frees, 8,189 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -282,8 +282,26 @@ void test_format(){
 
 void test_hash(){
 	printf("---- test_hash -----\n");
-	printf("hash: %ld", hash_char("abc"));
+	printf("hash abc: %ld\n", hash_char("abc"));
+	printf("hash 123: %ld\n", hash_int(123));
 	printf("\n");
+}
+
+void test_listmap(){
+	printf("---- test_listmap -----\n");
+	listmap l = new_listmap_from_range(0, 10);
+	str string = new_str(NULL);
+	listmap_insert_char(&l, "start", 0);
+	listmap_insert_char(&l, "end", 100);
+	listmap_insert_char(&l, "temp", 5);
+	print_listmap(&l);
+	listmap_remove_char(&l, "temp");
+	print_listmap(&l);
+	str_set_listmap_get(&string, &l, 11);
+	print_str_preview(&string);
+	printf("\n");
+	listmap_reset(&l);
+	str_reset(&string);
 }
 
 int main(int argc, char **argv){
@@ -306,5 +324,6 @@ int main(int argc, char **argv){
 	test_extend();
 	test_format();
 	test_hash();
+	test_listmap();
 	return 0;
 }

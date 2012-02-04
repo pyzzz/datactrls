@@ -91,7 +91,6 @@ int char_find(char* value, int value_length, char* key, int key_length){
 		dst[i+dst_from] = src[i+src_from];
 	}
 }
-[2012-01-31] memcpy instead of this*/
 
 char *char_copy(char *src, int src_length){
 	int i;
@@ -109,6 +108,7 @@ char *char_copy(char *src, int src_length){
 	dst[src_length] = '\x00';
 	return dst;
 }
+[2012-01-31] memcpy instead of this*/
 
 char_replace_result char_replace_from(char* value, int value_length,
 	char* before, int before_length, char* after, int after_length, int from){

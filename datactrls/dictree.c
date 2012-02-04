@@ -83,6 +83,9 @@ void dict_node_reset(register dict_node *node){
 }
 
 void dictree_reset(dictree *dict){
+	if (dict->root == NULL){
+		return;
+	}
 	dict_node_reset(dict->root);
 	dict->root->symbol = '\x00';
 }
@@ -311,7 +314,7 @@ void print_dictree(dictree *dict){
 		return;
 	}
 	#endif
-	printf("{");
+	printf("dictree[] {");
 	print_dict_node(dict->root);
 	printf("}");
 	printf("\n");

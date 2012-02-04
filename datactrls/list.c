@@ -118,8 +118,9 @@ int list_find_int(list *l, int num){
 	//return index
 	list_child *m = NULL;
 	int i;
+	int length = l->length;
 	m = l->start;
-	for (i=0; i<l->length; i++){
+	for (i=0; i<length; i++){
 		if (m->data->type == DATA_TYPE_INT && m->data->num == num){
 			return i;
 		}
@@ -132,8 +133,9 @@ int list_find_str(list *l, str *string){
 	//return index
 	list_child *m = NULL;
 	int i;
+	int length = l->length;
 	m = l->start;
-	for (i=0; i<l->length; i++){
+	for (i=0; i<length; i++){
 		if (m->data->type == DATA_TYPE_STR){
 			if (str_equal(m->data->string, string) == 1){
 				return i;
@@ -148,8 +150,9 @@ int list_find_char(list *l, char *value){
 	//return index
 	list_child *m = NULL;
 	int i;
+	int length = l->length;
 	m = l->start;
-	for (i=0; i<l->length; i++){
+	for (i=0; i<length; i++){
 		if (m->data->type == DATA_TYPE_STR){
 			if (str_equal_char(m->data->string, value) == 1){
 				return i;
@@ -207,12 +210,10 @@ void list_remove_child(list *l, list_child *m){
 
 int list_remove(list *l, int index){
 	//remove from index, return bool
-	#if NULL_ARG_CHECK
 	if (index < 0){
 		fprintf(stderr, "[error] list_remove: index < 0 [%d]\n", index);
 		return 0;
 	}
-	#endif
 	if (index >= l->length){
 		fprintf(stderr, "[error] list_remove: index out of range [%d]\n", index);
 		return 0;
@@ -386,7 +387,8 @@ int new_int_from_list_get(list *l, int index){
 		return -1;
 	}
 	else if (data->type != DATA_TYPE_INT){
-		fprintf(stderr, "[error] list_get_int: data type not int [index:%d]\n",
+		fprintf(stderr,
+			"[error] new_int_from_list_get: data type not int [index:%d]\n",
 			index);
 		return -1;
 	}
@@ -445,20 +447,19 @@ void str_set_list_get(str *string, list *l, int index){
 char *new_char_from_list_get(list *l, int index){
 	//return char*
 	list_data *data = NULL;
-	char *result = malloc(sizeof(char)*1);
-	result[0] = '\x00';
+	char *result = NULL;
 	data = list_get(l, index);
 	if (data == NULL){
 		return result;
 	}
 	else if (data->type != DATA_TYPE_STR){
-		fprintf(stderr, "[error] list_get_char: data type not str [index:%d]\n",
+		fprintf(stderr,
+			"[error] new_char_from_list_get: data type not str [index:%d]\n",
 			index);
 		return result;
 	}
-	free(result);
-	result = NULL;
-	result = char_copy(data->string->value, data->string->length);
+	result = malloc(sizeof(char)*(data->string->length+1));
+	memcpy(result, data->string->value, data->string->length);
 	return result;
 }
 
@@ -470,9 +471,8 @@ void list_reset(list *l){
 
 void print_list(list *l){
 	list_child *m = NULL;
-	printf("list length: %d\n", l->length);
 	m = l->start;
-	printf("[");
+	printf("list[%d] [", l->length);
 	while (1){
 		if (m == NULL){
 			break;
@@ -500,26 +500,62 @@ list new_list(){
 	return l;
 }
 
-list new_list_from_range(int start, int end){
-	list l = new_list();
-	int i;
-	for (i=start; i<end; i++){
-		list_append_int(&l, i);
-	}
+list *new_list_p(){
+	list *l = malloc(sizeof(list));
+	l->length = 0;
+	l->start = NULL;
+	l->end = NULL;
 	return l;
 }
 
-list new_list_from_split_bin(char *value, int value_length,
-	char *split_key, byte skip_space){
+void list_append_range(list *l, int start, int end){
+	register int i;
+	for (i=start; i<end; i++){
+		list_append_int(l, i);
+	}
+}
+
+void list_append_range_with_step(list *l, int start, int end, int step){
+	register int i;
+	for (i=start; i<end; i+=step){
+		list_append_int(l, i);
+	}
+}
+
+list new_list_from_range(int start, int end){
 	list l = new_list();
+	list_append_range(&l, start, end);
+	return l;
+}
+
+list *new_list_p_from_range(int start, int end){
+	list *l = new_list_p();
+	list_append_range(l, start, end);
+	return l;
+}
+
+list new_list_from_range_with_step(int start, int end, int step){
+	list l = new_list();
+	list_append_range_with_step(&l, start, end, step);
+	return l;
+}
+
+list *new_list_p_from_range_with_step(int start, int end, int step){
+	list *l = new_list_p();
+	list_append_range_with_step(l, start, end, step);
+	return l;
+}
+
+void list_append_split_bin(list *l, char *value, int value_length,
+	char *split_key, byte skip_space){
 	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] new_list_from_split_bin: value == NULL\n");
-		return l;
+		return;
 	}
 	if (split_key == NULL){
 		fprintf(stderr, "[error] new_list_from_split_bin: split_key == NULL\n");
-		return l;
+		return;
 	}
 	#endif
 	str *string = new_str_p(NULL);
@@ -547,10 +583,10 @@ list new_list_from_split_bin(char *value, int value_length,
 			if (skip_space != 0){
 				str_set_bin(string, word, word_i-split_key_length);
 				str_strip(string);
-				list_append_str(&l, string);
+				list_append_str(l, string);
 			}
 			else{
-				list_append_bin(&l, word, word_i-split_key_length);
+				list_append_bin(l, word, word_i-split_key_length);
 			}
 			word_i = 0;
 			split_key_i = 0;
@@ -562,41 +598,101 @@ list new_list_from_split_bin(char *value, int value_length,
 	if (skip_space != 0){
 		str_set_bin(string, word, word_i);
 		str_strip(string);
-		list_append_str(&l, string);
+		list_append_str(l, string);
 	}
 	else{
-		list_append_bin(&l, word, word_i);
+		list_append_bin(l, word, word_i);
 	}
 	str_reset(string);
 	free(word);
 	free(string);
 	word = NULL;
 	string = NULL;
+}
+
+void list_append_split_str(list *l, str *string, char *split_key){
+	list_append_split_bin(l, string->value, string->length, split_key, 0);
+}
+
+void list_append_split_str_skip_space(list *l, str *string, char *split_key){
+	list_append_split_bin(l, string->value, string->length, split_key, 1);
+}
+
+void list_append_split_char(list *l, char *value, char *split_key){
+	list_append_split_bin(l, value, strlen(value), split_key, 0);
+}
+
+void list_append_split_char_skip_space(list *l, char *value, char *split_key){
+	list_append_split_bin(l, value, strlen(value), split_key, 1);
+}
+
+list new_list_from_split_bin(char *value, int value_length,
+	char *split_key, byte skip_space){
+	list l = new_list();
+	list_append_split_bin(&l, value, value_length, split_key, skip_space);
+	return l;
+}
+
+list *new_list_p_from_split_bin(char *value, int value_length,
+	char *split_key, byte skip_space){
+	list *l = new_list_p();
+	list_append_split_bin(l, value, value_length, split_key, skip_space);
 	return l;
 }
 
 list new_list_from_split_str(str *string, char *split_key){
-	return new_list_from_split_bin(string->value, string->length, split_key, 0);
+	list l = new_list();
+	list_append_split_bin(&l, string->value, string->length, split_key, 0);
+	return l;
+}
+
+list *new_list_p_from_split_str(str *string, char *split_key){
+	list *l = new_list_p();
+	list_append_split_bin(l, string->value, string->length, split_key, 0);
+	return l;
 }
 
 list new_list_from_split_str_skip_space(str *string, char *split_key){
-	return new_list_from_split_bin(string->value, string->length, split_key, 1);
+	list l = new_list();
+	list_append_split_bin(&l, string->value, string->length, split_key, 1);
+	return l;
+}
+
+list *new_list_p_from_split_str_skip_space(str *string, char *split_key){
+	list *l = new_list_p();
+	list_append_split_bin(l, string->value, string->length, split_key, 1);
+	return l;
 }
 
 list new_list_from_split_char(char *value, char *split_key){
-	return new_list_from_split_bin(value, strlen(value), split_key, 0);
+	list l = new_list();
+	list_append_split_bin(&l, value, strlen(value), split_key, 0);
+	return l;
+}
+
+list *new_list_p_from_split_char(char *value, char *split_key){
+	list *l = new_list_p();
+	list_append_split_bin(l, value, strlen(value), split_key, 0);
+	return l;
 }
 
 list new_list_from_split_char_skip_space(char *value, char *split_key){
-	return new_list_from_split_bin(value, strlen(value), split_key, 1);
+	list l = new_list();
+	list_append_split_bin(&l, value, strlen(value), split_key, 1);
+	return l;
 }
 
-list new_list_from_split_bin_space(char *value, int value_length){
-	list l = new_list();
+list *new_list_p_from_split_char_skip_space(char *value, char *split_key){
+	list *l = new_list_p();
+	list_append_split_bin(l, value, strlen(value), split_key, 1);
+	return l;
+}
+
+void list_append_split_bin_space(list *l, char *value, int value_length){
 	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] new_list_from_split_bin_space: value == NULL\n");
-		return l;
+		return;
 	}
 	#endif
 	char *word = malloc(sizeof(char)*(value_length+1));
@@ -608,7 +704,7 @@ list new_list_from_split_bin_space(char *value, int value_length){
 		if (j == ' ' || j == '\t' || j == '\x00'){
 			word[word_i] = '\x00';
 			if (word[0] != '\x00'){
-				list_append_bin(&l, word, word_i);
+				list_append_bin(l, word, word_i);
 				word[0] = '\x00';
 			}
 			word_i = 0;
@@ -620,17 +716,44 @@ list new_list_from_split_bin_space(char *value, int value_length){
 		//printf("j %d\n", j);
 	}
 	if (word[0] != '\x00'){
-		list_append_bin(&l, word, word_i);
+		list_append_bin(l, word, word_i);
 	}
 	free(word);
 	word = NULL;
+}
+
+list new_list_from_split_bin_space(char *value, int value_length){
+	list l = new_list();
+	list_append_split_bin_space(&l, value, value_length);
+	return l;
+}
+
+list *new_list_p_from_split_bin_space(char *value, int value_length){
+	list *l = new_list_p();
+	list_append_split_bin_space(l, value, value_length);
 	return l;
 }
 
 list new_list_from_split_str_space(str *string){
-	return new_list_from_split_bin_space(string->value, string->length);
+	list l = new_list();
+	list_append_split_bin_space(&l, string->value, string->length);
+	return l;
+}
+
+list *new_list_p_from_split_str_space(str *string){
+	list *l = new_list_p();
+	list_append_split_bin_space(l, string->value, string->length);
+	return l;
 }
 
 list new_list_from_split_char_space(char *value){
-	return new_list_from_split_bin_space(value, strlen(value));
+	list l = new_list();
+	list_append_split_bin_space(&l, value, strlen(value));
+	return l;
+}
+
+list *new_list_p_from_split_char_space(char *value){
+	list *l = new_list_p();
+	list_append_split_bin_space(l, value, strlen(value));
+	return l;
 }
