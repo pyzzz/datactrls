@@ -1,6 +1,6 @@
 #include "superlibrary/superlibrary.c"
-/*gcc -Wall -Wformat-security -g -lm -c "%f"
-gcc -Wall -Wformat-security -g -lm -o "%e" "%f"
+/*gcc -Wall -Wformat-security -O3 -g -lm -c "%f"
+gcc -Wall -Wformat-security -O3 -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
 [2012-02-01] total heap usage: 330 allocs, 330 frees, 7,250 bytes allocated*/
@@ -30,7 +30,7 @@ void test_copy(){
 
 void test_index(){
 	printf("---- test_index -----\n");
-	str string = new_str("test index");
+	str string = new_str("testiindex");
 	str key = new_str("index");
 	int index = str_find(&string, &key);
 	printf("find \"%s\" in \"%s\": index = %d\n", key.value, string.value, index);

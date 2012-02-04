@@ -43,6 +43,10 @@ int char_find_from(char* value, int value_length,
 			}
 			loop_key_index += 1;
 		}
+		else if (value[loop_value_index] == key[0]){
+			return_index = loop_value_index;
+			loop_key_index = 1;
+		}
 		else{
 			return_index = -1;
 			loop_key_index = 0;
@@ -94,30 +98,26 @@ char_replace_result char_replace_from(char* value, int value_length,
 	char* before, int before_length, char* after, int after_length, int from){
 	int before_index;
 	char_replace_result result;
+	result.index = -1;
+	result.replaced = 0;
+	result.new_value = NULL;
+	result.new_length = 0;
 	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] char_replace_from: value == NULL\n");
-		result.index = -1;
-		result.replaced = 0;
 		return result;
 	}
 	if (before == NULL){
 		fprintf(stderr, "[error] char_replace_from: before == NULL\n");
-		result.index = -1;
-		result.replaced = 0;
 		return result;
 	}
 	if (after == NULL){
 		fprintf(stderr, "[error] char_replace_from: after == NULL\n");
-		result.index = -1;
-		result.replaced = 0;
 		return result;
 	}
 	#endif
 	before_index = char_find_from(value, value_length, before, before_length, from);
 	if (before_index == -1){
-		result.index = before_index;
-		result.replaced = 0;
 		return result;
 	}
 	result.index = before_index;

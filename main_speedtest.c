@@ -5,6 +5,7 @@
 void test_dictree(){
 	/*[2012-01-31] set 0.94s get 0.65s
 	[2012-02-01] set 0.85s get 0.53s clear 0.25 (NULL_ARG_CHECK 0)
+	[2012-02-02] set 0.70s get 0.39s clear 0.23 (NULL_ARG_CHECK 0 -O3)
 	*/
 	printf("---- test_dictree -----\n");
 	int i;
