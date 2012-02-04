@@ -1,4 +1,4 @@
-#include "superlibrary/superlibrary.c"
+#include "datactrls/init.c"
 /*gcc -Wall -Wformat-security -O3 -g -lm -c "%f"
 gcc -Wall -Wformat-security -O3 -g -lm -o "%e" "%f"
 -g debug

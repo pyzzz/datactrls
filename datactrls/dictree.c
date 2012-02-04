@@ -1,3 +1,4 @@
+//dict (tree)
 //reference from chatty (http://0xcc.net/chatty/)
 struct dict_node{
 	str *key;

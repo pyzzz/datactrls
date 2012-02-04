@@ -1,4 +1,4 @@
-#include "superlibrary/superlibrary.c"
+#include "datactrls/init.c"
 #include <time.h>
 #define MAX_RANGE 1000000
 
