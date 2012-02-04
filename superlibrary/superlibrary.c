@@ -15,3 +15,4 @@ typedef char byte;
 #include "convert.c"
 #include "file.c"
 #include "dictree.c"
+#include "hash.c"

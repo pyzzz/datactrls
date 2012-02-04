@@ -3,7 +3,7 @@
 gcc -Wall -Wformat-security -O3 -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
-[2012-02-01] total heap usage: 330 allocs, 330 frees, 7,250 bytes allocated*/
+[2012-02-04] total heap usage: 330 allocs, 330 frees, 7,250 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -280,6 +280,12 @@ void test_format(){
 	dictree_destroy(&dict);
 }
 
+void test_hash(){
+	printf("---- test_hash -----\n");
+	printf("hash: %ld", hash_char("abc"));
+	printf("\n");
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -299,5 +305,6 @@ int main(int argc, char **argv){
 	test_dictree();
 	test_extend();
 	test_format();
+	test_hash();
 	return 0;
 }

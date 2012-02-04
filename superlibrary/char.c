@@ -31,6 +31,16 @@ int char_find_from(char* value, int value_length,
 	int loop_value_index = from;
 	int loop_key_index = 0;
 	int return_index = -1;
+	#if NULL_ARG_CHECK
+	if (value == NULL){
+		fprintf(stderr, "[error] char_find_from: value == NULL\n");
+		return -1;
+	}
+	if (key == NULL){
+		fprintf(stderr, "[error] char_find_from: key == NULL\n");
+		return -1;
+	}
+	#endif
 	if (from >= value_length){
 		return return_index;
 	}
@@ -67,12 +77,12 @@ int char_find(char* value, int value_length, char* key, int key_length){
 	return char_find_from(value, value_length, key, key_length, 0);
 }
 
-void char_clear(char *value, int value_length, char num){
+/*void char_clear(char *value, int value_length, char num){
 	int i;
 	for (i=0; i<value_length; i++){
 		value[i] = num;
 	}
-}
+}*/
 
 /*void char_copy_range(char *src, int src_from, char *dst, int dst_from, int length){
 	//fprintf(stderr, "char_copy_range: %d %s\n", length, src);
@@ -86,6 +96,12 @@ void char_clear(char *value, int value_length, char num){
 char *char_copy(char *src, int src_length){
 	int i;
 	char *dst;
+	#if NULL_ARG_CHECK
+	if (src == NULL){
+		fprintf(stderr, "[error] char_copy: src == NULL\n");
+		return NULL;
+	}
+	#endif
 	dst = malloc(sizeof(char)*(src_length+1));
 	for (i=0; i<src_length; i++){
 		dst[i] = src[i];
