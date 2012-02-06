@@ -1,4 +1,4 @@
-#define NULL_ARG_CHECK 0
+#define NULL_ARG_CHECK 1
 #define CHAR_FROM_INT_BUF 50
 #define LISTMAP_POLL_SIZE 10
 typedef char byte;
@@ -18,3 +18,4 @@ typedef char byte;
 #include "listmap.c"
 #include "hash.c"
 #include "dictree.c"
+#include "strplus.c"

@@ -59,7 +59,33 @@ function test_list()
 	io.write("\n")
 end
 
+function test_str()
+	--[2012-02-05] find 0.94s replace 1.10s
+	io.write("---- test_str -----\n")
+	local i = 0
+	local s = "1143534=69789+35435^(100&10+5)"
+	local rep_before = "35"
+	local rep_after = "3535"
+	start = os.clock()
+	io.write(string.format("test str find (%d)...\t", MAX_RANGE))
+	for i=0, MAX_RANGE do
+		string.find(s, string.format("%d", i))
+	end
+	io.write(string.format("%.2fs\n", os.clock()-start))
+	--s = string.gsub(s, rep_before, rep_after)
+	--print(s)
+	start = os.clock()
+	io.write(string.format("test str replace (%d)...\t", MAX_RANGE))
+	for i=MAX_RANGE/2, MAX_RANGE do
+		s = string.gsub(s, rep_before, rep_after)
+		s = string.gsub(s, rep_after, rep_before)
+	end
+	io.write(string.format("%.2fs\n", os.clock()-start))
+	io.write("\n")
+end
+
 if not package.loaded[...] then
 	test_dict()
 	test_list()
+	test_str()
 end

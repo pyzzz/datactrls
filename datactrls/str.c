@@ -78,10 +78,10 @@ byte str_replace_from(str *string, str *before, str *after, int from){
 		string->value, string->length,
 		before->value, before->length,
 		after->value, after->length, from);
-	if (result.replaced > 0){
+	if (result.count > 0){
 		str_reset_with(string, result.new_length, result.new_value);
 	}
-	return result.replaced;
+	return result.count;
 }
 
 byte str_replace_char_from(str *string,
@@ -106,14 +106,14 @@ byte str_replace_char_once(str *string,
 int str_replace(str *string, str *before, str *after){
 	//replace all
 	char_replace_result result;
-	int from = 0;
-	int count = 0;
+	register int from = 0;
+	register int count = 0;
 	while (1){
 		result = char_replace_from(
 			string->value, string->length,
 			before->value, before->length,
 			after->value, after->length, from);
-		if (result.replaced){
+		if (result.count){
 			str_reset_with(string, result.new_length, result.new_value);
 			from = result.index+after->length;
 			count += 1;

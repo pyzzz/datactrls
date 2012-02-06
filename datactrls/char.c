@@ -2,7 +2,7 @@ struct char_replace_result{
 	int index;
 	int new_length;
 	char *new_value;
-	byte replaced;
+	int count;
 };
 typedef struct char_replace_result char_replace_result;
 
@@ -28,9 +28,6 @@ typedef struct char_replace_result char_replace_result;
 
 int char_find_from(char* value, int value_length,
 	char* key, int key_length, int from){
-	int loop_value_index = from;
-	int loop_key_index = 0;
-	int return_index = -1;
 	#if NULL_ARG_CHECK
 	if (value == NULL){
 		fprintf(stderr, "[error] char_find_from: value == NULL\n");
@@ -41,48 +38,36 @@ int char_find_from(char* value, int value_length,
 		return -1;
 	}
 	#endif
-	if (from >= value_length){
-		return return_index;
+	register int i;
+	register int j;
+	int max_i = value_length-key_length;
+	char qs_table[256];
+	for (i=0; i<256; i++){
+		qs_table[i] = key_length+1;
 	}
-	while (1){
-		//printf("%d %d %d %d %d\n", value[loop_value_index], key[loop_key_index],
-		//	loop_value_index, loop_key_index, return_index);
-		if (value[loop_value_index] == key[loop_key_index]){
-			if (loop_key_index == 0){
-				return_index = loop_value_index;
+	for (i=0; i<key_length; i++){
+		//printf("set %c %d\n", key[i], key_length-i);
+		qs_table[(int)key[i]] = key_length-i;
+	}
+	i = from;
+	while (i <= max_i){
+		//printf("qs %d %c next %c\n", i, value[i], value[i+key_length]);
+		for (j=0; j<key_length; j++){
+			if (value[i+j] != key[j]){
+				break;
 			}
-			loop_key_index += 1;
 		}
-		else if (value[loop_value_index] == key[0]){
-			return_index = loop_value_index;
-			loop_key_index = 1;
+		if (j == key_length){
+			return i;
 		}
-		else{
-			return_index = -1;
-			loop_key_index = 0;
-		}
-		if (loop_key_index == key_length){ //not bug when endswith key 
-			break;
-		}
-		else if (loop_value_index == value_length){
-			return_index = -1;
-			break;
-		}
-		loop_value_index += 1;
+		i += qs_table[(int)value[i+key_length]];
 	}
-	return return_index;
+	return -1;
 }
 
 int char_find(char* value, int value_length, char* key, int key_length){
 	return char_find_from(value, value_length, key, key_length, 0);
 }
-
-/*void char_clear(char *value, int value_length, char num){
-	int i;
-	for (i=0; i<value_length; i++){
-		value[i] = num;
-	}
-}*/
 
 /*void char_copy_range(char *src, int src_from, char *dst, int dst_from, int length){
 	//fprintf(stderr, "char_copy_range: %d %s\n", length, src);
@@ -115,7 +100,7 @@ char_replace_result char_replace_from(char* value, int value_length,
 	int before_index;
 	char_replace_result result;
 	result.index = -1;
-	result.replaced = 0;
+	result.count = 0;
 	result.new_value = NULL;
 	result.new_length = 0;
 	#if NULL_ARG_CHECK
@@ -137,7 +122,7 @@ char_replace_result char_replace_from(char* value, int value_length,
 		return result;
 	}
 	result.index = before_index;
-	result.replaced = 1;
+	result.count = 1;
 	result.new_length = value_length+after_length-before_length;
 	result.new_value = malloc(sizeof(char)*(result.new_length+1));
 	memcpy(result.new_value, value, before_index); //"ab"

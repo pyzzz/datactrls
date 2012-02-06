@@ -91,9 +91,49 @@ void test_listmap(){
 	listmap_reset(&l);
 }
 
+void test_str(){
+	/*[2012-02-05] find 0.79s replace 2.30s replace_plus 0.90s (NULL_ARG_CHECK 0 -O0)
+	[2012-02-05] find 0.29s replace 0.40s replace_plus 0.40s (NULL_ARG_CHECK 0 -O3)
+	*/
+	printf("---- test_str -----\n");
+	int i;
+	clock_t start;
+	str string = new_str("1143534=69789+35435^(100&10+5)");
+	str key = new_str(NULL);
+	str rep_before = new_str("35");
+	str rep_after = new_str("3535");
+	start = clock();
+	printf("test str find (%d)...\t", MAX_RANGE); fflush(stdout);
+	for (i=0; i<MAX_RANGE; i++){
+		str_set_int(&key, i);
+		str_find(&string, &key);
+	}
+	printf("%.2lfs\n", ((double)clock()-start)/CLOCKS_PER_SEC);
+	start = clock();
+	printf("test str replace (%d)...\t", MAX_RANGE); fflush(stdout);
+	for (i=MAX_RANGE/2; i<MAX_RANGE; i++){
+		str_replace(&string, &rep_before, &rep_after);
+		str_replace(&string, &rep_after, &rep_before);
+	}
+	printf("%.2lfs\n", ((double)clock()-start)/CLOCKS_PER_SEC);
+	start = clock();
+	printf("test str replace_plus (%d)...\t", MAX_RANGE); fflush(stdout);
+	for (i=MAX_RANGE/2; i<MAX_RANGE; i++){
+		str_replace_plus(&string, &rep_before, &rep_after);
+		str_replace_plus(&string, &rep_after, &rep_before);
+	}
+	printf("%.2lfs\n", ((double)clock()-start)/CLOCKS_PER_SEC);
+	printf("\n");
+	str_reset(&string);
+	str_reset(&key);
+	str_reset(&rep_before);
+	str_reset(&rep_after);
+}
+
 int main(int argc, char **argv){
 	test_dictree();
 	test_list();
 	test_listmap();
+	test_str();
 	return 0;
 }

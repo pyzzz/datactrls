@@ -3,7 +3,7 @@
 gcc -Wall -Wformat-security -O3 -g -lm -o "%e" "%f"
 -g debug
 valgrind -v --error-limit=no --leak-check=full ./main
-[2012-02-04] total heap usage: 354 allocs, 354 frees, 8,189 bytes allocated*/
+[2012-02-05] total heap usage: 410 allocs, 410 frees, 9,091 bytes allocated*/
 
 void test_hello_world(){
 	printf("---- test_hello_world -----\n");
@@ -30,8 +30,8 @@ void test_copy(){
 
 void test_index(){
 	printf("---- test_index -----\n");
-	str string = new_str("testiindex");
-	str key = new_str("index");
+	str string = new_str("aaaaabaaaaa");
+	str key = new_str("aab");
 	int index = str_find(&string, &key);
 	printf("find \"%s\" in \"%s\": index = %d\n", key.value, string.value, index);
 	printf("\n");
@@ -319,6 +319,22 @@ void test_listmap_split(){
 	listmap_reset(&ls);
 }
 
+void test_replace_plus(){
+	printf("---- test_replace_plus -----\n");
+	str before = new_str("ii1ii");
+	str after = new_str("i11");
+	str string = new_str("replace ii1ii_ii1iiii1ii1ii end");
+	print_str_preview(&string);
+	str_replace_plus(&string, &before, &after);
+	print_str_preview(&string);
+	str_replace_char_plus(&string, "11i", "0");
+	print_str_preview(&string);
+	printf("\n");
+	str_reset(&before);
+	str_reset(&after);
+	str_reset(&string);
+}
+
 int main(int argc, char **argv){
 	test_hello_world();
 	test_copy();
@@ -341,5 +357,6 @@ int main(int argc, char **argv){
 	test_hash();
 	test_listmap();
 	test_listmap_split();
+	test_replace_plus();
 	return 0;
 }
